@@ -1,12 +1,10 @@
-package enity.Monsters;
+e:\DSA_project\image\playerpackage enity.Monsters;
 
 import enity.Bullet;
 import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
-import utilz.Raycasting;
-import utilz.BFS;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -223,21 +221,21 @@ public class Boss extends Enity {
     }
 
     public boolean update2(){
-        double distance_to_playerX = player.x - x;
-        double distance_to_playerY = player.y - y;
-        double distance_to_player = Math.sqrt(Math.pow(distance_to_playerX, 2) + Math.pow(distance_to_playerY, 2));
+        double distance_to_playerX = player.x-x;
+        double distance_to_playerY = player.y-y;
 
-        if (distance_to_player == 0) {
+        double distance_to_player = Math.sqrt(Math.pow(distance_to_playerX,2) + Math.pow(distance_to_playerY,2));
+
+        if (distance_to_player == 0){
             distance_to_player = 1;
         }
-
-        double speedX = (speed / distance_to_player) * distance_to_playerX;
-        double speedY = (speed / distance_to_player) * distance_to_playerY;
+        double speedX = (speed/distance_to_player)*distance_to_playerX;
+        double speedY = (speed/distance_to_player)*distance_to_playerY;
 
         if (isDead) {
+
             return true;
         }
-
         long currentTime = System.nanoTime();
         if ((currentTime - startTime)/ 1_000_000_000 < 4) {
             if (distance_to_playerX >= 0 && distance_to_player > distance_attack) {
@@ -246,21 +244,49 @@ public class Boss extends Enity {
                 action = "moveLeft";
             }
         } else {
-            // Raycasting: Kiểm tra Line of Sight
-            if (Raycasting.canSeePlayer(this, player, panel)) {
-                // Nếu có thể thấy player, sử dụng BFS để tìm đường
-                List<Point> path = BFS.findPathToPlayer(this, player, panel);
-                if (!path.isEmpty()) {
-                    // Di chuyển theo đường đi tìm được
-                    moveAlongPath(path);
+
+
+
+//            x += speed * directionX;
+//            y += speed * directionY;
+//
+//            if (x <= 0 || x + width >= panel.boardWidth) {
+//                directionX *= -1;
+//            }
+//            if (y <= 0 || y + height >= panel.boardHeight) {
+//                directionY *= -1;
+//            }
+            int moveX = speed * directionX;
+            int moveY = speed * directionY;
+
+            // Call the tile-based collision check
+            panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
+
+            // Only move if not blocked
+            if (!collisionOn) {
+                if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
+                    directionX *= -1;
                 }
-            } else {
-                // Nếu không thể thấy player, boss sẽ di chuyển ngẫu nhiên
-                moveRandomly();
+                if (y + moveY <= 0 || y + moveY + height >= panel.boardHeight) {
+                    directionY *= -1;
+                }
+                x += moveX;
+                y += moveY;
+                x = Math.max(0, Math.min(x, panel.boardWidth - width));
+                y = Math.max(0, Math.min(y, panel.boardHeight - height));
+
+                worldX = x;
+                worldY = y;
             }
 
-        x = Math.max(0, Math.min(x, panel.boardWidth - width));
-        y = Math.max(0, Math.min(y, panel.boardHeight - height));
+
+
+            if (directionX > 0) {
+                action = "moveRight";
+            } else {
+                action = "moveLeft";
+            }
+        }
 
         if ((currentTime - lastAttackTime) / 1_000_000_000 >= 5) {
             action = "attackObject";
@@ -276,6 +302,8 @@ public class Boss extends Enity {
             lastAttackTime = currentTime;
         }
 
+
+
         if (distance_to_playerX >= 0 && distance_to_player <= distance_attack){
             action = "attack1Right";
         }
@@ -285,6 +313,7 @@ public class Boss extends Enity {
 
         attackArea = new Rectangle(x,y,width,height);
         damageArea = new Rectangle(x,y,width,height);
+
 
         if((action == "attack1Right" || action == "attack1Left") && (action != "death") && (player.damageArea.intersects(this.attackArea))){
             if(player.heart <= 0){
@@ -320,6 +349,7 @@ public class Boss extends Enity {
                 y += speedY;
             }
         }
+
 
         if (action == "stand"){
             spriteCounter_5Frame++;
@@ -416,34 +446,7 @@ public class Boss extends Enity {
 
         return false;
     }
-    private void moveAlongPath(List<Point> path) {
-        // Di chuyển theo các điểm trong đường đi
-        if (!path.isEmpty()) {
-            Point nextPoint = path.get(0);
-            double moveX = nextPoint.x - x;
-            double moveY = nextPoint.y - y;
-            x += moveX;
-            y += moveY;
-        }
-    }
-    
-    private void moveRandomly() {
-        // Di chuyển ngẫu nhiên nếu không thể thấy player
-        int moveX = speed * directionX;
-        int moveY = speed * directionY;
-        panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
-    
-        if (!collisionOn) {
-            if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
-                directionX *= -1;
-            }
-            if (y + moveY <= 0 || y + moveY + height >= panel.boardHeight) {
-                directionY *= -1;
-            }
-            x += moveX;
-            y += moveY;
-        }
-    }
+
     public void draw(Graphics2D g2){
         BufferedImage image = null;
 

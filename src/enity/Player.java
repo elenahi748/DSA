@@ -124,10 +124,13 @@ public class Player extends Enity {
     int count;
     public void update() {
         damageArea = new Rectangle(x,y,width,height);
+
+
         //check tile collision
         collisionOn = false;
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
+
 
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
@@ -512,11 +515,5 @@ public class Player extends Enity {
         this.direction_horizontal = "right";
         this.direction_vertical = "down";
     }
-    public void takeDamage(int damage){
-        heart -= damage;
-        if(heart <= 0){
-            action="death";
-        }
-        System.out.println("Player took damage! Remaining hearts: " + heart);
-    }
+
 }

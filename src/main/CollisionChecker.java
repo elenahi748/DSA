@@ -134,6 +134,7 @@ public class CollisionChecker {
                         collisionRight = true;
                     }
                     break;
+
             }
         }
 
@@ -143,6 +144,9 @@ public class CollisionChecker {
     public boolean isCollisionDown() { return collisionBottom; }
     public boolean isCollisionLeft() { return collisionLeft; }
     public boolean isCollisionRight() { return collisionRight; }
+
+
+
 
     public void checkTileWarrior(Warrior warrior, double speedX, double speedY) {
         warrior.collisionOn = false;
@@ -207,4 +211,7 @@ public class CollisionChecker {
             if (moveY != 0) boss.directionY *= -1;
         }
     }
+
+
+
 }
