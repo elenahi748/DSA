@@ -355,7 +355,6 @@ public class Player extends Enity {
         }
 
         // when damaged
-
         if (action == "hurt"){
             if (direction_horizontal == "right"){
                 if (spriteNum_14Frame == 1){
@@ -488,7 +487,9 @@ public class Player extends Enity {
             }
         }
 
-        g2.drawImage(image, x, y, width, height, null);
+        int drawX = worldX - panel.viewportX;
+        int drawY = worldY - panel.viewportY;
+        g2.drawImage(image, drawX, drawY, width, height, null);
 
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);

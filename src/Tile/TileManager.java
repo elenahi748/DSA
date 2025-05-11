@@ -49,8 +49,7 @@ public class TileManager {
         }
     }
 
-    public void loadMap(String filePath)
-    {
+    public void loadMap(String filePath){
         try {
             InputStream  is = getClass().getResourceAsStream(filePath);
             if (is == null) {
@@ -83,22 +82,26 @@ public class TileManager {
     }
 
     public void draw(Graphics2D g2) {
-        // Calculate the range of tiles to draw based on the viewport
+        // Determine visible tiles based on viewport
         int startCol = panel.viewportX / panel.tileSize;
         int endCol = (panel.viewportX + panel.boardWidth) / panel.tileSize;
         int startRow = panel.viewportY / panel.tileSize;
         int endRow = (panel.viewportY + panel.boardHeight) / panel.tileSize;
-        
-        // Draw tiles within the calculated range
+
+        // Clamp to map boundaries
+        startCol = Math.max(0, startCol);
+        endCol = Math.min(mapTileNum.length - 1, endCol);
+        startRow = Math.max(0, startRow);
+        endRow = Math.min(mapTileNum[0].length - 1, endRow);
+
+        // Render visible tiles
         for (int row = startRow; row <= endRow; row++) {
             for (int col = startCol; col <= endCol; col++) {
-                if (col >= 0 && col < mapTileNum.length && row >= 0 && row < mapTileNum[0].length) {
-                    int tileNum = mapTileNum[col][row];
-                    int drawX = col * panel.tileSize - panel.viewportX;
-                    int drawY = row * panel.tileSize - panel.viewportY;
+                int tileNum = mapTileNum[col][row];
+                int drawX = col * panel.tileSize - panel.viewportX;
+                int drawY = row * panel.tileSize - panel.viewportY;
 
-                    g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
-                }
+                g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
             }
         }
     }

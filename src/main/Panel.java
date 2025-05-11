@@ -21,10 +21,10 @@ public class Panel extends JPanel implements Runnable {
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
-    public final int maxScreenCol = 30;
-    public final int maxScreenRow = 15;
-    public final int boardWidth = maxScreenCol * tileSize;
-    public final int boardHeight = maxScreenRow * tileSize;
+    public int maxScreenCol = 30;
+    public int maxScreenRow = 15;
+    public int boardWidth = maxScreenCol * tileSize;
+    public int boardHeight = maxScreenRow * tileSize;
     
     // Viewport Offset (Camera)
     public int viewportX = 0;
@@ -69,7 +69,16 @@ public class Panel extends JPanel implements Runnable {
     private long bossMessageStartTime = 0;
 
     public Panel() {
-        this.setPreferredSize(new Dimension(boardWidth, boardHeight));
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int windowHeight = (int) (screenSize.height * 0.9);
+        int tileSize = 48;
+
+        maxScreenRow = windowHeight / tileSize;
+        maxScreenCol = 50;
+        boardWidth = maxScreenCol * tileSize;
+        boardHeight = maxScreenRow * tileSize;
+
+        this.setPreferredSize(new Dimension(boardWidth, windowHeight));
         this.setBackground(Color.darkGray);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyHander);
@@ -126,23 +135,30 @@ public class Panel extends JPanel implements Runnable {
             }
             return;
         }
-
         // Update various game components
         player.update();
         heart.update();
         gun.update();
         bullet.update1();
 
+        // Calculate viewport based on Player position
         viewportX = player.worldX - boardWidth / 2 + player.width / 2;
         viewportY = player.worldY - boardHeight / 2 + player.height / 2;
 
+        // Clamp viewport to map boundaries
+        int mapWidth = tileM.mapTileNum.length * tileSize;
+        int mapHeight = tileM.mapTileNum[0].length * tileSize;
+
+        viewportX = Math.max(0, Math.min(viewportX, mapWidth - boardWidth));
+        viewportY = Math.max(0, Math.min(viewportY, mapHeight - boardHeight));
+            
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
 
         // When player is alive
         if (!player.action.equals("death")) {
-           gun.update();
+            gun.update();
             bullet.update1();
 
             if (!stopWarriorCreation) {
@@ -255,15 +271,21 @@ public class Panel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        
+        double scaleX = (double) this.getWidth() / boardWidth;
+        double scaleY = (double) this.getHeight() / boardHeight;
+        double scale = Math.min(scaleX, scaleY);
 
+        g2.scale(scale, scale);
         g2.translate(-viewportX, -viewportY);
+
         // Draw the background image
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight, null);
         }
+
         tileM.draw(g2);
         tileM.drawCollisionAreas(g2);
-
         // Draw other game elements
         player.draw(g2);
         heart.draw(g2);

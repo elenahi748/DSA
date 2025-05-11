@@ -75,11 +75,11 @@ public class CollisionChecker {
         playerTopWorldY = player.worldY + player.collisionArea.y;
         playerBottomWorldY = player.worldY + player.collisionArea.y + player.collisionArea.height;
 
-        playerLeftCol = playerLeftWorldX / panel.tileSize;
-        playerRightCol = playerRightWorldX / panel.tileSize;
-        playerTopRow = playerTopWorldY / panel.tileSize;
-        playerBottRow = playerBottomWorldY / panel.tileSize;
-
+        playerLeftCol = Math.max(0, playerLeftWorldX / panel.tileSize);
+        playerRightCol = Math.min(panel.tileM.mapTileNum.length - 1, playerRightWorldX / panel.tileSize);
+        playerTopRow = Math.max(0, playerTopWorldY / panel.tileSize);
+        playerBottRow = Math.min(panel.tileM.mapTileNum[0].length - 1, playerBottomWorldY / panel.tileSize);
+        
         int tileNum1, tileNum2;
 
         if (player.direction_vertical != null) {
@@ -107,7 +107,6 @@ public class CollisionChecker {
                     }
                     break;
             }
-
         }
         if (player.direction_horizontal != null) {
             switch (player.direction_horizontal)
@@ -137,7 +136,6 @@ public class CollisionChecker {
 
             }
         }
-
     }
 
     public boolean isCollisionUp() { return collisionTop; }
