@@ -20,7 +20,6 @@ public class TileManager {
 
     private int baseX = 0, baseY = 0, offset = 64;
 
-
     Panel panel;
     private int width, height;
 
@@ -31,12 +30,11 @@ public class TileManager {
 
         mapTileNum = new int[panel.maxScreenCol][panel.maxScreenRow];
 
-        width = panel.tileSize * 4 / 3;
-        height = panel.tileSize * 4 / 3;
+        width = panel.tileSize;
+        height = panel.tileSize;
         getTileImage();
         loadMap("/Mapdata/Map02.txt");
         }
-
 
     public void getTileImage()
     {
@@ -81,39 +79,35 @@ public class TileManager {
                     row++;
                 }
             }
-
             br.close();
         } catch (Exception e) {
 
         }
     }
 
-    public  void draw(Graphics2D g2)
-    {
+    public void draw(Graphics2D g2) {
+        // Calculate the range of tiles to draw based on the viewport
+        int startCol = panel.viewportX / panel.tileSize;
+        int endCol = (panel.viewportX + panel.boardWidth) / panel.tileSize;
+        int startRow = panel.viewportY / panel.tileSize;
+        int endRow = (panel.viewportY + panel.boardHeight) / panel.tileSize;
+        
+        // Draw tiles within the calculated range
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startCol; col <= endCol; col++) {
+                if (col >= 0 && col < mapTileNum.length && row >= 0 && row < mapTileNum[0].length) {
+                    int tileNum = mapTileNum[col][row];
+                    int drawX = col * panel.tileSize - panel.viewportX;
+                    int drawY = row * panel.tileSize - panel.viewportY;
 
-        int col = 0;
-        int row = 0;
-        int x = 0, y= 0;
-        while (col < panel.maxScreenCol && row < panel.maxScreenRow)
-        {
-            int tileNum = mapTileNum[col][row];
-
-            g2.drawImage(tile[tileNum].image,col * panel.tileSize,row * panel.tileSize,width,height,null);
-            col++;
-            x++;
-            if (col == panel.maxScreenCol)
-            {
-                col = 0;
-                x = 0;
-                row ++;
-                y++;
+                    g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
+                }
             }
         }
-
     }
+
     public void drawCollisionAreas(Graphics2D g2) {
         g2.setColor(new Color(255, 0, 0, 100)); // Semi-transparent red
-
         //player wall collision
 //        for (int row = 0; row < panel.maxScreenRow; row++) {
 //            for (int col = 0; col < panel.maxScreenCol; col++) {
@@ -125,5 +119,15 @@ public class TileManager {
 //                    g2.fillRect(x, y, panel.tileSize, panel.tileSize);
 //                }
 //            }
+        for (int row = 0; row < mapTileNum[0].length; row++) {
+            for (int col = 0; col < mapTileNum.length; col++) {
+                int tileNum = mapTileNum[col][row];
+                if (tile[tileNum].collision) {
+                    int x = col * panel.tileSize - panel.viewportX;
+                    int y = row * panel.tileSize - panel.viewportY;
+                    g2.fillRect(x, y, panel.tileSize, panel.tileSize);
+                }
+            }
+        }
     }
 }

@@ -1,4 +1,3 @@
-
 package main;
 
 import Tile.TileManager;
@@ -26,6 +25,13 @@ public class Panel extends JPanel implements Runnable {
     public final int maxScreenRow = 15;
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
+    
+    // WORLD SETTINGS
+    public final int worldWidth = 50 * tileSize; // Adjust based on map size
+    public final int worldHeight = 50 * tileSize;
+    // Viewport Offset (Camera)
+    public int viewportX = 0;
+    public int viewportY = 0;
 
     //Tiles
     public TileManager tileM = new TileManager(this);
@@ -50,6 +56,7 @@ public class Panel extends JPanel implements Runnable {
     public static ArrayList<Bullet> bullets;
     public static ArrayList<Warrior> warriors;
     public static Boss activeBoss = null;
+
     private long startTime = 0;
     private boolean stopWarriorCreation = false;
     private boolean bossCreated = false;
@@ -129,10 +136,18 @@ public class Panel extends JPanel implements Runnable {
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
+        // Update the viewport to follow the player
+        viewportX = player.x - boardWidth / 2 + player.width / 2;
+        viewportY = player.y - boardHeight / 2 + player.height / 2;
+        // Clamp the viewport to the world boundaries
+        if (viewportX < 0) viewportX = 0;
+        if (viewportY < 0) viewportY = 0;
+        if (viewportX > worldWidth - boardWidth) viewportX = worldWidth - boardWidth;
+        if (viewportY > worldHeight - boardHeight) viewportY = worldHeight - boardHeight;
 
         // When player is alive
         if (!player.action.equals("death")) {
-           gun.update();
+            gun.update();
             bullet.update1();
 
             if (!stopWarriorCreation) {
@@ -245,15 +260,11 @@ public class Panel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-
-
+        g2.translate(-viewportX, -viewportY);
         // Draw the background image
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight, null);
-
         }
-
-
         tileM.draw(g2);
         tileM.drawCollisionAreas(g2);
 
@@ -261,7 +272,6 @@ public class Panel extends JPanel implements Runnable {
         player.draw(g2);
         heart.draw(g2);
         gun.draw(g2);
-
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
@@ -300,6 +310,7 @@ public class Panel extends JPanel implements Runnable {
             g2.setFont(new Font("Arial", Font.ITALIC, 30));
             g2.drawString("Enter to restart", boardWidth / 2 - 145, boardHeight / 2+70);
         }
+        g2.translate(viewportX, viewportY);
         g2.dispose();
     }
 }
