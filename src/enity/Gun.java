@@ -66,6 +66,9 @@ public class Gun extends Enity{
 
     int count;
     public void update() {
+        this.x = player.x + player.width / 2 - this.width / 2;
+        this.y = player.y + player.height / 2 - this.height / 2;
+        
         if(keyHander.w_Pressed == true) {
             y -= speedY;
             count = 1;

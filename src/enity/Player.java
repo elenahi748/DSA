@@ -130,11 +130,7 @@ public class Player extends Enity {
         collisionOn = false;
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
-        if (keyHander.d_Pressed && x + speedX + width <= panel.worldWidth) {
-            x += speedX;
-            worldX = x;
-        }
-        damageArea = new Rectangle(x, y, width, height);
+
 
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
@@ -219,6 +215,7 @@ public class Player extends Enity {
                 action = "standRight";
             }
         }
+
 
         if (action == "hurt"){
             spriteCounter_14Frame++;
@@ -491,11 +488,8 @@ public class Player extends Enity {
             }
         }
 
-        int drawX = x - panel.viewportX;
-        int drawY = y - panel.viewportY;
-        g2.drawImage(image, drawX, drawY, width, height, null);
-        g2.drawRect(drawX + collisionArea.x, drawY + collisionArea.y,
-                collisionArea.width, collisionArea.height);
+        g2.drawImage(image, x, y, width, height, null);
+
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);
         g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),
@@ -520,5 +514,4 @@ public class Player extends Enity {
         this.direction_horizontal = "right";
         this.direction_vertical = "down";
     }
-
 }

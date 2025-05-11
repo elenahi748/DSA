@@ -25,29 +25,26 @@ public class TileManager {
 
     public TileManager(Panel panel)
     {
-        tile = new Tile[10];
         this.panel = panel;
+        tile = new Tile[10];
+        int mapCols = panel.maxScreenCol;
+        int mapRows = panel.maxScreenRow;
 
-        mapTileNum = new int[panel.maxScreenCol][panel.maxScreenRow];
-
-        width = panel.tileSize;
-        height = panel.tileSize;
+        mapTileNum = new int[mapCols][mapRows]; // Đồng bộ kích thước với World
         getTileImage();
         loadMap("/Mapdata/Map02.txt");
         }
 
-    public void getTileImage()
-    {
-        try{
-                tile[1] = new Tile();
-                tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/black.png"));
-                tile[1].collision = false;
+    public void getTileImage() {
+        try {
+            tile[0] = new Tile();
+            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png")); // Đảm bảo đường dẫn đúng
+            tile[0].collision = true;
 
-                tile[0] = new Tile();
-                tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png"));
-                tile[0].collision = true;
-        }catch (IOException e)
-        {
+            tile[1] = new Tile();
+            tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/black.png"));
+            tile[1].collision = false;
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -120,13 +117,12 @@ public class TileManager {
 //                }
 //            }
         for (int row = 0; row < mapTileNum[0].length; row++) {
-            for (int col = 0; col < mapTileNum.length; col++) {
-                int tileNum = mapTileNum[col][row];
-                if (tile[tileNum].collision) {
-                    int x = col * panel.tileSize - panel.viewportX;
-                    int y = row * panel.tileSize - panel.viewportY;
-                    g2.fillRect(x, y, panel.tileSize, panel.tileSize);
-                }
+        for (int col = 0; col < mapTileNum.length; col++) {
+            int tileNum = mapTileNum[col][row];
+            int drawX = col * panel.tileSize;
+            int drawY = row * panel.tileSize;
+
+            g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
             }
         }
     }

@@ -26,9 +26,6 @@ public class Panel extends JPanel implements Runnable {
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
     
-    // WORLD SETTINGS
-    public final int worldWidth = 50 * tileSize; // Adjust based on map size
-    public final int worldHeight = 50 * tileSize;
     // Viewport Offset (Camera)
     public int viewportX = 0;
     public int viewportY = 0;
@@ -130,24 +127,22 @@ public class Panel extends JPanel implements Runnable {
             return;
         }
 
+        // Update various game components
         player.update();
         heart.update();
+        gun.update();
+        bullet.update1();
+
+        viewportX = player.worldX - boardWidth / 2 + player.width / 2;
+        viewportY = player.worldY - boardHeight / 2 + player.height / 2;
 
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
-        // Update the viewport to follow the player
-        viewportX = player.x - boardWidth / 2 + player.width / 2;
-        viewportY = player.y - boardHeight / 2 + player.height / 2;
-        // Clamp the viewport to the world boundaries
-        if (viewportX < 0) viewportX = 0;
-        if (viewportY < 0) viewportY = 0;
-        if (viewportX > worldWidth - boardWidth) viewportX = worldWidth - boardWidth;
-        if (viewportY > worldHeight - boardHeight) viewportY = worldHeight - boardHeight;
 
         // When player is alive
         if (!player.action.equals("death")) {
-            gun.update();
+           gun.update();
             bullet.update1();
 
             if (!stopWarriorCreation) {
@@ -190,6 +185,7 @@ public class Panel extends JPanel implements Runnable {
             if (startTime == 0) {
                 startTime = System.currentTimeMillis();
             }
+
 
             if (System.currentTimeMillis() - startTime >= 200) {
                 if (!stopWarriorCreation) {
