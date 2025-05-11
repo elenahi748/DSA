@@ -125,12 +125,10 @@ public class Player extends Enity {
     public void update() {
         damageArea = new Rectangle(x,y,width,height);
 
-
         //check tile collision
         collisionOn = false;
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
-
 
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
@@ -487,10 +485,9 @@ public class Player extends Enity {
             }
         }
 
-        int drawX = worldX - panel.viewportX;
-        int drawY = worldY - panel.viewportY;
+        int drawX = x - panel.viewportX;
+        int drawY = y - panel.viewportY;
         g2.drawImage(image, drawX, drawY, width, height, null);
-
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);
         g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),

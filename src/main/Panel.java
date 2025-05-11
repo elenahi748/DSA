@@ -69,16 +69,10 @@ public class Panel extends JPanel implements Runnable {
     private long bossMessageStartTime = 0;
 
     public Panel() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int windowHeight = (int) (screenSize.height * 0.9);
-        int tileSize = 48;
-
-        maxScreenRow = windowHeight / tileSize;
-        maxScreenCol = 50;
         boardWidth = maxScreenCol * tileSize;
         boardHeight = maxScreenRow * tileSize;
 
-        this.setPreferredSize(new Dimension(boardWidth, windowHeight));
+        this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyHander);
@@ -142,16 +136,22 @@ public class Panel extends JPanel implements Runnable {
         bullet.update1();
 
         // Calculate viewport based on Player position
-        viewportX = player.worldX - boardWidth / 2 + player.width / 2;
-        viewportY = player.worldY - boardHeight / 2 + player.height / 2;
+        viewportX = player.x - getWidth() / 2;
+        viewportY = player.y - getHeight() / 2;
 
-        // Clamp viewport to map boundaries
-        int mapWidth = tileM.mapTileNum.length * tileSize;
-        int mapHeight = tileM.mapTileNum[0].length * tileSize;
-
-        viewportX = Math.max(0, Math.min(viewportX, mapWidth - boardWidth));
-        viewportY = Math.max(0, Math.min(viewportY, mapHeight - boardHeight));
-            
+        // Giới hạn khung nhìn để không hiển thị bên ngoài bản đồ
+        if (viewportX < 0) {
+            viewportX = 0;
+        }
+        if (viewportY < 0) {
+            viewportY = 0;
+        }
+        if (viewportX > boardWidth - getWidth()) {
+            viewportX = boardWidth - getWidth();
+        }
+        if (viewportY > boardHeight - getHeight()) {
+            viewportY = boardHeight - getHeight();
+        }
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
