@@ -1,4 +1,4 @@
-e:\DSA_project\image\playerpackage enity.Monsters;
+package enity.Monsters;
 
 import enity.Bullet;
 import enity.Enity;
