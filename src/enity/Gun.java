@@ -28,8 +28,8 @@ public class Gun extends Enity{
     int distanceX = 10;
     int distanceY = 2;
     public void setDefautValues_Gun(){
-        x = player.worldX + distanceX;
-        y = player.worldY-distanceY;
+        x = player.x + distanceX;
+        y = player.y-distanceY;
         width = player.width*3/2;
         height = player.height*3/2;
         speedX = player.speedX;
@@ -66,20 +66,48 @@ public class Gun extends Enity{
 
     int count;
     public void update() {
-        // Calculate the gun's position relative to the *world* position of the player
-        this.x = player.worldX + player.width / 2 - this.width / 2;
-        this.y = player.worldY + player.height / 2 - this.height / 2;
-        this.x -= panel.viewportX;
-        this.y -= panel.viewportY;
+        if(keyHander.w_Pressed == true) {
+            y -= speedY;
+            count = 1;
+        }
+        else if (keyHander.w_Pressed == false && count == 1) {
+            count = 0;
+        }
 
-        
+        if(keyHander.s_Pressed == true) {
+            y += speedY;
+            count = 2;
+        }
+        else if (keyHander.s_Pressed == false && count == 2 ) {
+            count = 0;
+        }
 
-        // if (action == "right") {
-        //     x = player.x - distanceX*2;
-        // }
-        // if (action == "left") {
-        //     x = player.x - distanceX*2;
-        // }
+        if(keyHander.d_Pressed == true) {
+            action = "right";
+            x += speedX;
+            count = 3;
+        }
+        else if (keyHander.d_Pressed == false && count == 3) {
+            action = "right";
+            count = 0;
+        }
+
+        if(keyHander.a_Pressed == true) {
+            action = "left";
+            x -= speedX;
+            count = 4;
+        }
+        else if (keyHander.a_Pressed == false && count == 4) {
+            action = "left";
+            count = 0;
+        }
+
+        if (action == "right") {
+            x = player.x - distanceX*2;
+        }
+        if (action == "left") {
+            x = player.x - distanceX*2;
+        }
 
         //Gun when fire bullets
         if (keyHander.right_Pressed == true || keyHander.left_Pressed == true || keyHander.up_Pressed == true || keyHander.down_Pressed == true) {

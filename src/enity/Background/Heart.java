@@ -182,8 +182,6 @@ public class Heart extends Enity {
                 image = Heart17;
             }
         }
-        int drawX = 20;
-        int drawY = 20;
-        g2.drawImage(image, drawX, drawY, width, height, null);
+        g2.drawImage(image, x, y, width, height, null);
     }
 }

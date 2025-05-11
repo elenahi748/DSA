@@ -23,15 +23,10 @@ public class Main extends JFrame {
         mainPanel.add(menuPanel, "Menu");
         mainPanel.add(gamePanel, "Game");
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int scaledWidth = (int) (screenSize.width * 0.9);
-        int scaledHeight = (int) (screenSize.height * 0.9);
-
         // Add main panel to the frame
         this.add(mainPanel);
         this.pack();
-        this.setPreferredSize(new Dimension(scaledWidth, scaledHeight));
-        this.setSize(scaledWidth, scaledHeight);
+        this.setPreferredSize(new Dimension(960, 640)); // Ensure consistent size
         this.setLocationRelativeTo(null);
         this.setVisible(true);
 

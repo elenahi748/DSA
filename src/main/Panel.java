@@ -1,3 +1,4 @@
+
 package main;
 
 import Tile.TileManager;
@@ -21,14 +22,10 @@ public class Panel extends JPanel implements Runnable {
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
-    public int maxScreenCol = 30;
-    public int maxScreenRow = 15;
-    public int boardWidth = maxScreenCol * tileSize;
-    public int boardHeight = maxScreenRow * tileSize;
-    
-    // Viewport Offset (Camera)
-    public int viewportX = 0;
-    public int viewportY = 0;
+    public final int maxScreenCol = 30;
+    public final int maxScreenRow = 15;
+    public final int boardWidth = maxScreenCol * tileSize;
+    public final int boardHeight = maxScreenRow * tileSize;
 
     //Tiles
     public TileManager tileM = new TileManager(this);
@@ -53,7 +50,6 @@ public class Panel extends JPanel implements Runnable {
     public static ArrayList<Bullet> bullets;
     public static ArrayList<Warrior> warriors;
     public static Boss activeBoss = null;
-
     private long startTime = 0;
     private boolean stopWarriorCreation = false;
     private boolean bossCreated = false;
@@ -69,9 +65,6 @@ public class Panel extends JPanel implements Runnable {
     private long bossMessageStartTime = 0;
 
     public Panel() {
-        boardWidth = maxScreenCol * tileSize;
-        boardHeight = maxScreenRow * tileSize;
-
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
         this.setDoubleBuffered(true);
@@ -129,36 +122,17 @@ public class Panel extends JPanel implements Runnable {
             }
             return;
         }
-        // Update various game components
+
         player.update();
         heart.update();
-        gun.update();
-        bullet.update1();
 
-        // Calculate viewport based on Player position
-        viewportX = player.x - getWidth() / 2;
-        viewportY = player.y - getHeight() / 2;
-
-        // Giới hạn khung nhìn để không hiển thị bên ngoài bản đồ
-        if (viewportX < 0) {
-            viewportX = 0;
-        }
-        if (viewportY < 0) {
-            viewportY = 0;
-        }
-        if (viewportX > boardWidth - getWidth()) {
-            viewportX = boardWidth - getWidth();
-        }
-        if (viewportY > boardHeight - getHeight()) {
-            viewportY = boardHeight - getHeight();
-        }
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
 
         // When player is alive
         if (!player.action.equals("death")) {
-            gun.update();
+           gun.update();
             bullet.update1();
 
             if (!stopWarriorCreation) {
@@ -271,25 +245,24 @@ public class Panel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        
-        double scaleX = (double) this.getWidth() / boardWidth;
-        double scaleY = (double) this.getHeight() / boardHeight;
-        double scale = Math.min(scaleX, scaleY);
 
-        g2.scale(scale, scale);
-        g2.translate(-viewportX, -viewportY);
+
 
         // Draw the background image
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight, null);
+
         }
+
 
         tileM.draw(g2);
         tileM.drawCollisionAreas(g2);
+
         // Draw other game elements
         player.draw(g2);
         heart.draw(g2);
         gun.draw(g2);
+
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
@@ -328,7 +301,8 @@ public class Panel extends JPanel implements Runnable {
             g2.setFont(new Font("Arial", Font.ITALIC, 30));
             g2.drawString("Enter to restart", boardWidth / 2 - 145, boardHeight / 2+70);
         }
-        g2.translate(viewportX, viewportY);
+
         g2.dispose();
     }
 }
+

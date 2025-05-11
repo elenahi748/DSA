@@ -161,6 +161,7 @@ public class Warrior extends Enity {
         }
     }
 
+
     public void takeDamage(int damage) {
         if (isDead) return;
         heart -= damage;
@@ -170,6 +171,7 @@ public class Warrior extends Enity {
             isDead = true;
         }
     }
+
 
     public void update1(){
         long currentTime = System.nanoTime();
@@ -546,15 +548,19 @@ public class Warrior extends Enity {
                 }
             }
         }
-        int drawX = x - panel.viewportX;
-        int drawY = y - panel.viewportY;
 
-        g2.drawImage(image, drawX, drawY, width, height, null);
+
+
+        g2.drawImage(image, x, y, width, height,null);
+
 
         //Draw collision area
         g2.setColor(new Color(255, 0, 0, 100));
-        g2.fillRect(drawX + collisionArea.x, drawY + collisionArea.y,
+        g2.fillRect(x + collisionArea.x, y + collisionArea.y,
                 collisionArea.width, collisionArea.height);
+
+
+
     }
     public Rectangle getDamageArea() {
         return damageArea;

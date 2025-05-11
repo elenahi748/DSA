@@ -125,10 +125,12 @@ public class Player extends Enity {
     public void update() {
         damageArea = new Rectangle(x,y,width,height);
 
+
         //check tile collision
         collisionOn = false;
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
+
 
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
@@ -353,6 +355,7 @@ public class Player extends Enity {
         }
 
         // when damaged
+
         if (action == "hurt"){
             if (direction_horizontal == "right"){
                 if (spriteNum_14Frame == 1){
@@ -485,9 +488,8 @@ public class Player extends Enity {
             }
         }
 
-        int drawX = x - panel.viewportX;
-        int drawY = y - panel.viewportY;
-        g2.drawImage(image, drawX, drawY, width, height, null);
+        g2.drawImage(image, x, y, width, height, null);
+
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);
         g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),
@@ -497,6 +499,7 @@ public class Player extends Enity {
 
         //draw damageArea rectangle
 //        g2.drawRect(damageArea.x, damageArea.y, damageArea.width, damageArea.height);
+
 
     }
 
@@ -512,4 +515,5 @@ public class Player extends Enity {
         this.direction_horizontal = "right";
         this.direction_vertical = "down";
     }
+
 }
