@@ -4,6 +4,7 @@ import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -127,7 +128,7 @@ public class Heart extends Enity {
         }
     }
 
-    public void draw (Graphics2D g2){
+    public void draw (Graphics2D g2, Viewpoint viewpoint){
         BufferedImage image = null;
         if (action == "4_Hearts") {
             image = Heart1;
@@ -182,6 +183,6 @@ public class Heart extends Enity {
                 image = Heart17;
             }
         }
-        g2.drawImage(image, x, y, width, height, null);
+        g2.drawImage(image, 20, 20, width, height, null);
     }
 }

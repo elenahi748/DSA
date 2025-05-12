@@ -5,6 +5,7 @@ import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 import utilz.*;
 
 import javax.imageio.ImageIO;
@@ -287,6 +288,17 @@ public boolean canSeePlayer() {
             }
         }
 
+        // if (canSeePlayer()) {
+        //     if ((currentTime - startTime)/ 1_000_000_000 < 4) {
+        //         if (distance_to_player > distance_attack) {
+        //             action = distance_to_playerX >= 0 ? "moveRight" : "moveLeft";
+        //         }
+        //     }
+        // } else {
+        //     action = "stand"; // hoặc "patrol", tùy logic bạn muốn
+        // }
+
+
         if ((currentTime - lastAttackTime) / 1_000_000_000 >= 5) {
             action = "attackObject";
             Rectangle attackSquare = new Rectangle(player.x, player.y, player.width, player.height);
@@ -442,7 +454,7 @@ public boolean canSeePlayer() {
         return false;
     }
 
-    public void draw(Graphics2D g2){
+    public void draw(Graphics2D g2, Viewpoint viewpoint){
         BufferedImage image = null;
 
         if (action == "moveRight") {
@@ -716,18 +728,16 @@ public boolean canSeePlayer() {
         }
         
         if (action == "attackObject") {
-            g2.drawImage(bossAttack2Object1, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object2, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object3, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object4, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object5, player.x, player.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object1, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object2, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object3, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object4, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object5, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
         }
 
-        g2.drawImage(image, x, y, width, height,null);
-
+        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
         //Draw collision
         g2.setColor(Color.RED);
-        g2.drawRect(worldX + collisionArea.x, worldY + collisionArea.y,
-                collisionArea.width, collisionArea.height);
+        g2.drawRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y, collisionArea.width, collisionArea.height);
     }
 }

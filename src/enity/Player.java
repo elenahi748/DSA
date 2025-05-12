@@ -3,6 +3,7 @@ package enity;
 
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -313,7 +314,7 @@ public class Player extends Enity {
         }
     }
 
-    public void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, Viewpoint viewpoint) {
 //        g2.setColor(Color.WHITE);
 //        g2.fillRect(x, y, panel.tileSize, panel.tileSize);
         BufferedImage image = null;
@@ -488,8 +489,7 @@ public class Player extends Enity {
             }
         }
 
-        g2.drawImage(image, x, y, width, height, null);
-
+        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);
         g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),

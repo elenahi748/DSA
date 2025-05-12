@@ -4,6 +4,7 @@ import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 import enity.Bullet;
 
 import javax.imageio.ImageIO;
@@ -405,7 +406,7 @@ public class Warrior extends Enity {
         return false;
     }
 
-    public void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, Viewpoint viewpoint) {
         BufferedImage image = null;
 
         if (action == "moveRight") {
@@ -608,12 +609,11 @@ public class Warrior extends Enity {
             }
         }
 
-        g2.drawImage(image, x, y, width, height, null);
-
+        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
         // Draw collision area
         g2.setColor(new Color(255, 0, 0, 100));
-        g2.fillRect(x + collisionArea.x, y + collisionArea.y,
-                collisionArea.width, collisionArea.height);
+        g2.fillRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y,
+            collisionArea.width, collisionArea.height);
 
     }
 

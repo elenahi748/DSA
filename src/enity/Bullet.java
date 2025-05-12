@@ -3,6 +3,7 @@ package enity;
 import enity.Monsters.Warrior;
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -167,7 +168,7 @@ public class Bullet extends Enity{
     public int getDamage() {
         return damage;
     }
-    public void draw (Graphics2D g2){
+    public void draw (Graphics2D g2, Viewpoint viewpoint){
         BufferedImage image = null;
         if (loopRight == true) {
             image = bulletRight;
@@ -178,7 +179,7 @@ public class Bullet extends Enity{
         } else if (loopDown == true) {
             image = bulletDown;
         }
-        g2.drawImage(image, x, y, null);
+        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
     }
     private boolean isProcessed = false;
 

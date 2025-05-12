@@ -1,4 +1,3 @@
-
 package main;
 
 import Tile.TileManager;
@@ -26,6 +25,15 @@ public class Panel extends JPanel implements Runnable {
     public final int maxScreenRow = 15;
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
+
+    public final int maxMapCol = 100;  // Ví dụ bản đồ có 100 cột
+public final int maxMapRow = 100;  // Ví dụ bản đồ có 100 hàng
+
+public final int mapWidth = maxMapCol * tileSize;
+public final int mapHeight = maxMapRow * tileSize;
+
+public final int screenWidth = maxScreenCol * tileSize;
+public final int screenHeight = maxScreenRow * tileSize;
 
     //Tiles
     public TileManager tileM = new TileManager(this);
@@ -65,7 +73,15 @@ public class Panel extends JPanel implements Runnable {
     private long bossMessageStartTime = 0;
     
     public TileManager tileManager;
+
+    // viewpoint (Camera)
+    private Viewpoint viewpoint;
+    
     public Panel() {
+        int mapWidth = tileSize * maxMapCol; // maxMapCol là số cột thực của bản đồ (KHÔNG phải maxScreenCol)
+int mapHeight = tileSize * maxMapRow;
+viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
+        
         tileManager = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
@@ -139,7 +155,7 @@ public class Panel extends JPanel implements Runnable {
 
         // When player is alive
         if (!player.action.equals("death")) {
-           gun.update();
+            gun.update();
             bullet.update1();
 
             if (!stopWarriorCreation) {
@@ -248,43 +264,42 @@ public class Panel extends JPanel implements Runnable {
         gameWon = false;
 //sound.playLoopedSound("game-music.wav");
     }
-
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-
+        viewpoint.follow(player.x, player.y);
 
         // Draw the background image
         if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight, null);
-
+            g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight,
+                viewpoint.x, viewpoint.y, viewpoint.x + viewpoint.width, viewpoint.y + viewpoint.height, null);
         }
 
-
-        tileM.draw(g2);
-        tileM.drawCollisionAreas(g2);
+        tileM.draw(g2, viewpoint);
+        tileM.drawCollisionAreas(g2, viewpoint);
 
         // Draw other game elements
-        player.draw(g2);
-        heart.draw(g2);
-        gun.draw(g2);
+        player.draw(g2, viewpoint);
+        heart.draw(g2, viewpoint);
+        gun.draw(g2, viewpoint);
 
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
-                bullets.get(i).draw(g2);
+                bullets.get(i).draw(g2, viewpoint);
             }
         }
 
         if (warriors != null) {
             for (int i = 0; i < warriors.size(); i++) {
-                warriors.get(i).draw(g2);
+                warriors.get(i).draw(g2, viewpoint);
             }
         }
 
         if (activeBoss != null) {
-            activeBoss.draw(g2);
+            activeBoss.draw(g2, viewpoint);
         }
 
         if (showBossMessage) {
