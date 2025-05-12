@@ -5,16 +5,18 @@ import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
+import utilz.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Random;
+import java.util.List;
 
 public class Boss extends Enity {
     int heart = 5;
-    int speed = 4;
+    int speed = 3;
     int distance_attack = 70;
     private boolean isDead = false;
 
@@ -219,7 +221,15 @@ public class Boss extends Enity {
             action = "death";
         }
     }
+public boolean canSeePlayer() {
+    if (panel.tileManager.mapTileNum == null) {
+        throw new IllegalStateException("mapTileNum is null when calling canSeePlayer.");
+    }
 
+    Rectangle bossRect = new Rectangle(this.x, this.y, this.width, this.height);
+    Rectangle playerRect = new Rectangle(player.x, player.y, player.width, player.height);
+    return Raycasting.canSeePlayer(bossRect, playerRect, panel.tileManager.mapTileNum, panel.tileManager, panel.tileSize);
+}
     public boolean update2(){
         double distance_to_playerX = player.x-x;
         double distance_to_playerY = player.y-y;
@@ -233,9 +243,9 @@ public class Boss extends Enity {
         double speedY = (speed/distance_to_player)*distance_to_playerY;
 
         if (isDead) {
-
             return true;
         }
+
         long currentTime = System.nanoTime();
         if ((currentTime - startTime)/ 1_000_000_000 < 4) {
             if (distance_to_playerX >= 0 && distance_to_player > distance_attack) {
@@ -244,47 +254,36 @@ public class Boss extends Enity {
                 action = "moveLeft";
             }
         } else {
-
-
-
-//            x += speed * directionX;
-//            y += speed * directionY;
-//
-//            if (x <= 0 || x + width >= panel.boardWidth) {
-//                directionX *= -1;
-//            }
-//            if (y <= 0 || y + height >= panel.boardHeight) {
-//                directionY *= -1;
-//            }
-            int moveX = speed * directionX;
-            int moveY = speed * directionY;
-
-            // Call the tile-based collision check
-            panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
-
-            // Only move if not blocked
-            if (!collisionOn) {
-                if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
-                    directionX *= -1;
-                }
-                if (y + moveY <= 0 || y + moveY + height >= panel.boardHeight) {
-                    directionY *= -1;
-                }
-                x += moveX;
-                y += moveY;
+            if (canSeePlayer()) {
+                x += speedX;
+                y += speedY;
                 x = Math.max(0, Math.min(x, panel.boardWidth - width));
                 y = Math.max(0, Math.min(y, panel.boardHeight - height));
 
                 worldX = x;
                 worldY = y;
-            }
-
-
-
-            if (directionX > 0) {
-                action = "moveRight";
             } else {
-                action = "moveLeft";
+                // Use Algorithm to find path
+                List<Point> path = BFSPathfinder.findPath(
+                    new Point(this.x / panel.tileSize, this.y / panel.tileSize),
+                    new Point(player.x / panel.tileSize, player.y / panel.tileSize),
+                    panel.tileManager.mapTileNum,
+                    panel.tileManager,
+                    panel.tileSize
+                );
+                if (path != null && path.size() > 1) {
+                    Point nextStep = path.get(1); // Lấy bước tiếp theo
+                    int moveX = nextStep.x * panel.tileSize - x;
+                    int moveY = nextStep.y * panel.tileSize - y;
+
+                    // Kiểm tra va chạm trước khi di chuyển
+                    panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
+
+                    if (!collisionOn) {
+                        x += moveX;
+                        y += moveY;
+                    }
+                }
             }
         }
 
@@ -302,8 +301,6 @@ public class Boss extends Enity {
             lastAttackTime = currentTime;
         }
 
-
-
         if (distance_to_playerX >= 0 && distance_to_player <= distance_attack){
             action = "attack1Right";
         }
@@ -313,7 +310,6 @@ public class Boss extends Enity {
 
         attackArea = new Rectangle(x,y,width,height);
         damageArea = new Rectangle(x,y,width,height);
-
 
         if((action == "attack1Right" || action == "attack1Left") && (action != "death") && (player.damageArea.intersects(this.attackArea))){
             if(player.heart <= 0){
@@ -349,7 +345,6 @@ public class Boss extends Enity {
                 y += speedY;
             }
         }
-
 
         if (action == "stand"){
             spriteCounter_5Frame++;
@@ -539,14 +534,6 @@ public class Boss extends Enity {
             }
         }
 
-        if (action == "attackObject") {
-            g2.drawImage(bossAttack2Object1, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object2, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object3, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object4, player.x, player.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object5, player.x, player.y, player.width*2, player.height*2, null);
-        }
-
         if (action == "attack1Right") {
             if (spriteNum_14Frame == 1) {
                 image = bossAttack1Right1;
@@ -637,7 +624,6 @@ public class Boss extends Enity {
             }
         }
 
-
         if (action == "death") {
             if (direction_horizontal == "right") {
                 if (spriteNum_14Frame == 1) {
@@ -727,6 +713,14 @@ public class Boss extends Enity {
                     image = bossDeathLeft14;
                 }
             }
+        }
+        
+        if (action == "attackObject") {
+            g2.drawImage(bossAttack2Object1, player.x, player.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object2, player.x, player.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object3, player.x, player.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object4, player.x, player.y, player.width*2, player.height*2, null);
+            g2.drawImage(bossAttack2Object5, player.x, player.y, player.width*2, player.height*2, null);
         }
 
         g2.drawImage(image, x, y, width, height,null);
