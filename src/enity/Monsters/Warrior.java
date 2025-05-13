@@ -290,12 +290,8 @@ public class Warrior extends Enity {
         damageArea = new Rectangle(x, y, width, height);
 
         if ((action == "attack1Right" || action == "attack1Left") && (action != "death")
-                && (player.damageArea.intersects(this.attackArea))) {
-            if (player.heart <= 0) {
-                player.action = "death";
-            } else {
-                player.action = "hurt";
-            }
+                && (this.attackArea.intersects(player.damageArea))) {
+            player.takeDamage(0.5f);
         }
 
         if (!(action == "hurt" || action == "death")) {
@@ -612,9 +608,7 @@ public class Warrior extends Enity {
         g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
         // Draw collision area
         g2.setColor(new Color(255, 0, 0, 100));
-        g2.fillRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y,
-            collisionArea.width, collisionArea.height);
-
+        g2.fillRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y, collisionArea.width, collisionArea.height);
     }
 
     public Rectangle getDamageArea() {

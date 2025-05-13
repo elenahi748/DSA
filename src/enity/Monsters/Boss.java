@@ -32,6 +32,13 @@ public class Boss extends Enity {
     public int directionX = 1;
     public int directionY = 1;
 
+    // Animation for attack object effect
+    private int attackObjectFrame = 1;
+    private int attackObjectFrameCounter = 0;
+    private final int attackObjectMaxFrame = 5; // Số frame của hiệu ứng
+    private final int attackObjectFrameDelay = 5; // Số lần vẽ mỗi ảnh (tăng lên nếu muốn chậm hơn)
+    private boolean showingAttackObject = false;
+
     public Boss(Player player) {
         this.panel = player.panel;
         this.keyHander = player.keyHander;
@@ -264,6 +271,7 @@ public boolean canSeePlayer() {
                 worldX = x;
                 worldY = y;
             } else {
+
                 // // Use Algorithm to find path
                 // List<Point> path = BFSPathfinder.findPath(
                 //     new Point(this.x / panel.tileSize, this.y / panel.tileSize),
@@ -294,6 +302,7 @@ public boolean canSeePlayer() {
 
                 // Only move if not blocked
                 if (!collisionOn) {
+                    
                     if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
                         directionX *= -1;
                     }
@@ -317,27 +326,27 @@ public boolean canSeePlayer() {
             }
         }
 
-        // if (canSeePlayer()) {
-        //     if ((currentTime - startTime)/ 1_000_000_000 < 4) {
-        //         if (distance_to_player > distance_attack) {
-        //             action = distance_to_playerX >= 0 ? "moveRight" : "moveLeft";
-        //         }
-        //     }
-        // } else {
-        //     action = "stand";
-        // }
+        //     if (canSeePlayer()) {
+        //         x += speedX;
+        //             y += speedY;
+        //             x = Math.max(0, Math.min(x, panel.boardWidth - width));
+        //             y = Math.max(0, Math.min(y, panel.boardHeight - height));
 
+        //             worldX = x;
+        //             worldY = y;
+        //     } else {
+        //         action = "stand";
+        //     }
+        // }
 
         if ((currentTime - lastAttackTime) / 1_000_000_000 >= 5) {
             action = "attackObject";
-            Rectangle attackSquare = new Rectangle(player.x, player.y, player.width, player.height);
-            if (attackSquare.intersects(player.damageArea)) {
-                if(player.heart <= 0){
-                    player.action = "death";
-                }
-                else {
-                    player.action = "hurt";
-                }
+            showingAttackObject = true;
+            attackObjectFrame = 1;
+            attackObjectFrameCounter = 0;
+
+            if (this.attackArea.intersects(player.damageArea)) {
+                player.takeDamage(1);
             }
             lastAttackTime = currentTime;
         }
@@ -353,12 +362,7 @@ public boolean canSeePlayer() {
         damageArea = new Rectangle(x,y,width,height);
 
         if((action == "attack1Right" || action == "attack1Left") && (action != "death") && (player.damageArea.intersects(this.attackArea))){
-            if(player.heart <= 0){
-                player.action = "death";
-            }
-            else {
-                player.action = "hurt";
-            }
+            player.takeDamage(1);
         }
 
         if (action == "moveRight" || action == "moveLeft") {
@@ -756,12 +760,29 @@ public boolean canSeePlayer() {
             }
         }
         
-        if (action == "attackObject") {
-            g2.drawImage(bossAttack2Object1, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object2, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object3, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object4, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
-            g2.drawImage(bossAttack2Object5, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+        if (action == "attackObject" && showingAttackObject) {
+            BufferedImage effectImg = null;
+            switch (attackObjectFrame) {
+                case 1: effectImg = bossAttack2Object1; break;
+                case 2: effectImg = bossAttack2Object2; break;
+                case 3: effectImg = bossAttack2Object3; break;
+                case 4: effectImg = bossAttack2Object4; break;
+                case 5: effectImg = bossAttack2Object5; break;
+            }
+            if (effectImg != null) {
+                g2.drawImage(effectImg, player.x - viewpoint.x, player.y - viewpoint.y, player.width*2, player.height*2, null);
+            }
+            // Animation control
+            attackObjectFrameCounter++;
+            if (attackObjectFrameCounter >= attackObjectFrameDelay) {
+                attackObjectFrame++;
+                attackObjectFrameCounter = 0;
+                if (attackObjectFrame > attackObjectMaxFrame) {
+                    // Kết thúc animation
+                    showingAttackObject = false;
+                    action = "moveRight";
+                }
+            }
         }
 
         g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);

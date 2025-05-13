@@ -15,6 +15,9 @@ public class MenuPanel extends JPanel {
     private CardLayout cardLayout; // Biến CardLayout
     private JButton startButton; // Biến nút Start Game
 
+    private static final int BUTTON_WIDTH = 220;
+    private static final int BUTTON_HEIGHT = 48;
+    private static final Dimension BUTTON_SIZE = new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT);
 
     public MenuPanel(JPanel mainPanel, CardLayout cardLayout) {
         this.cardLayout = cardLayout; // Gán CardLayout
@@ -67,6 +70,21 @@ public class MenuPanel extends JPanel {
         centerPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Add spacing
         centerPanel.add(startButton);
 
+        // Select Map Button
+        JButton mapButton = new JButton("Select Map");
+        styleButton(mapButton);
+        mapButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        mapButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Chuyển sang giao diện chọn Map, bạn cần tạo JPanel cho "Map"
+                cardLayout.show(mainPanel, "Map");
+                // TODO: Nếu cần xử lý gì thêm khi vào menu map (load danh sách map, ...)
+            }
+        });
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        centerPanel.add(mapButton);
+
         // Exit Game Button
         JButton exitButton = new JButton("Exit Game");
         styleButton(exitButton);
@@ -74,6 +92,7 @@ public class MenuPanel extends JPanel {
         exitButton.addActionListener(e -> System.exit(0));
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing
         centerPanel.add(exitButton);
+        centerPanel.add(Box.createVerticalGlue());
 
         // Add center panel to the main layout
         this.add(centerPanel, gbc);
@@ -92,9 +111,16 @@ public class MenuPanel extends JPanel {
     private void styleButton(JButton button) {
         button.setFont(new Font("Arial", Font.BOLD, 18));
         button.setFocusPainted(false);
-        button.setBackground(new Color(50, 50, 50));
+        button.setBackground(Color.DARK_GRAY);
         button.setOpaque(true);
-        button.setMargin(new Insets(10, 20, 10, 20)); // Padding
+        button.setMargin(new Insets(10, 20, 10, 20));
+        button.setForeground(Color.WHITE);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        button.setMinimumSize(BUTTON_SIZE);
+        button.setMaximumSize(BUTTON_SIZE);
+        button.setPreferredSize(BUTTON_SIZE);
+
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
