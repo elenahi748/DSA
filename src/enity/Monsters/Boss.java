@@ -271,8 +271,7 @@ public boolean canSeePlayer() {
                 worldX = x;
                 worldY = y;
             } else {
-
-                // // Use Algorithm to find path
+                // Use Algorithm to find path
                 // List<Point> path = BFSPathfinder.findPath(
                 //     new Point(this.x / panel.tileSize, this.y / panel.tileSize),
                 //     new Point(player.x / panel.tileSize, player.y / panel.tileSize),

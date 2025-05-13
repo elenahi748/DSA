@@ -21,9 +21,6 @@ public class MenuPanel extends JPanel {
 
     public MenuPanel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         this.cardLayout = cardLayout; // Gán CardLayout
-        JButton startButton = new JButton("Start Game");
-        styleButton(startButton);
-        startButton.addActionListener(e -> mainFrame.showMapPanel(mainPanel, cardLayout));
 
         // Load background image
         try {
@@ -35,14 +32,20 @@ public class MenuPanel extends JPanel {
         // Set layout for centering components
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Spacing between components
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 0; // Single column layout
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
 
-        // Panel for buttons and title
+        // Center panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setOpaque(false); // Make the center panel transparent
+
+        // Glue for vertical centering
+        centerPanel.add(Box.createVerticalGlue());
 
         // Title label
         JLabel titleLabel = new JLabel("Last Day On Earth", SwingConstants.CENTER);
@@ -78,7 +81,6 @@ public class MenuPanel extends JPanel {
         mapButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Chuyển sang giao diện chọn Map, bạn cần tạo JPanel cho "Map"
                 cardLayout.show(mainPanel, "Map");
             }
         });

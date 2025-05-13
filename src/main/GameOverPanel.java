@@ -55,7 +55,7 @@ public class GameOverPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Vẽ lớp mờ overlay
+        // Drawn overlay
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(new Color(0, 0, 0, 120));
         g2.fillRect(0, 0, getWidth(), getHeight());
