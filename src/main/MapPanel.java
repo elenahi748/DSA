@@ -17,7 +17,7 @@ public class MapPanel extends JPanel {
     private static final int BUTTON_HEIGHT = 48;
     private static final Dimension BUTTON_SIZE = new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT);
 
-    public MapPanel(JPanel mainPanel, CardLayout cardLayout) {
+    public MapPanel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         // Load background image
         try {
             backgroundImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/background/main_bg.png")));

@@ -16,14 +16,14 @@ public class Main extends JFrame {
         JPanel mainPanel = new JPanel(cardLayout);
 
         // Create the menu and game panels
-        MenuPanel menuPanel = new MenuPanel(mainPanel, cardLayout);
-        Panel gamePanel = new Panel();
-        MapPanel mapPanel = new MapPanel();
+        MenuPanel menuPanel = new MenuPanel(mainPanel, cardLayout, this);
+        MapPanel mapPanel = new MapPanel(mainPanel, cardLayout, this);
+        Panel gamePanel = new Panel(mainPanel, cardLayout, this);
 
         // Add panels to the main panel
         mainPanel.add(menuPanel, "Menu");
         mainPanel.add(gamePanel, "Game");
-        mapPanel.add(mapPanel, "Map");
+        mainPanel.add(mapPanel, "Map");
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int scaledWidth = (int) (screenSize.width * 0.9);
@@ -53,7 +53,14 @@ public class Main extends JFrame {
             }
         });
     }
-
+    public void showMapPanel(JPanel mainPanel, CardLayout cardLayout) {
+        cardLayout.show(mainPanel, "Map");
+    }
+    public void startGameWithMap(JPanel mainPanel, CardLayout cardLayout, String mapType) {
+        // Gọi hàm setMapType trên gamePanel nếu cần
+        cardLayout.show(mainPanel, "Game");
+        // Cần gọi startGameThread() ở Panel tại đây nếu muốn
+    }
     public static void main(String[] args) {
         new Main();
     }

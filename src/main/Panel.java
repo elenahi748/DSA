@@ -73,7 +73,7 @@ public class Panel extends JPanel implements Runnable {
     // viewpoint (Camera)
     private Viewpoint viewpoint;
     
-    public Panel() {
+    public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
         tileManager = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));

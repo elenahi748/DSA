@@ -19,8 +19,11 @@ public class MenuPanel extends JPanel {
     private static final int BUTTON_HEIGHT = 48;
     private static final Dimension BUTTON_SIZE = new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT);
 
-    public MenuPanel(JPanel mainPanel, CardLayout cardLayout) {
+    public MenuPanel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         this.cardLayout = cardLayout; // Gán CardLayout
+        JButton startButton = new JButton("Start Game");
+        styleButton(startButton);
+        startButton.addActionListener(e -> mainFrame.showMapPanel(mainPanel, cardLayout));
 
         // Load background image
         try {
@@ -78,7 +81,7 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Chuyển sang giao diện chọn Map, bạn cần tạo JPanel cho "Map"
-                cardLayout.show(mapPanel, "Map");
+                cardLayout.show(mainPanel, "Map");
             }
         });
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
