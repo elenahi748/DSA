@@ -52,59 +52,40 @@ public class TileManager {
         { e.printStackTrace(); }
     }
 
-    public void loadMap(String filePath)
-    {
+    public void loadMap(String filePath) {
         try {
-            InputStream  is = getClass().getResourceAsStream(filePath);
-            if (is == null) {
-                throw new RuntimeException("Could not load /Maps/Map02.txt");
-            }
+            InputStream is = getClass().getResourceAsStream(filePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-            int col = 0;
-            int row = 0;
-            while (col<panel.maxScreenCol && row< panel.maxScreenRow)
-            {
+            for (int row = 0; row < panel.maxMapRow; row++) {
                 String line = br.readLine();
-
-                while(col < panel.maxScreenCol)
-                {
-                    String numbers[] = line.split(" ");
-                    int num = Integer.parseInt(numbers[col]);
+                String[] numbers = (line != null) ? line.trim().split(" ") : new String[0];
+                for (int col = 0; col < panel.maxMapCol; col++) {
+                    int num = 1; // Mặc định là nền (không phải tường)
+                    if (col < numbers.length) num = Integer.parseInt(numbers[col]);
                     mapTileNum[col][row] = num;
-                    //System.out.println("mapTileNum[" + col + "][" + row + "] = " + num);
-                    col++;
-                }
-                if (col == panel.maxScreenCol){
-                    col = 0;
-                    row++;
                 }
             }
-
             br.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    public void draw(Graphics2D g2, Viewpoint viewpoint) {
-        int col = 0;
-        int row = 0;
-        while (col < panel.maxScreenCol && row < panel.maxScreenRow) {
-            int tileNum = mapTileNum[col][row];
-            g2.drawImage(
-                tile[tileNum].image,
-                col * panel.tileSize - viewpoint.x,
-                row * panel.tileSize - viewpoint.y,
-                width, height, null
-            );
-            col++;
-            if (col == panel.maxScreenCol) {
-                col = 0;
-                row++;
+public void draw(Graphics2D g2, Viewpoint viewpoint) {
+    int tileSize = panel.tileSize;
+
+    int startCol = viewpoint.x / tileSize;
+        int endCol = Math.min((viewpoint.x + panel.boardWidth) / tileSize, panel.maxMapCol - 1);
+        int startRow = viewpoint.y / tileSize;
+        int endRow = Math.min((viewpoint.y + panel.boardHeight) / tileSize, panel.maxMapRow - 1);
+
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startCol; col <= endCol; col++) {
+                int tileNum = mapTileNum[col][row];
+                int screenX = col * tileSize - viewpoint.x;
+                int screenY = row * tileSize - viewpoint.y;
+                g2.drawImage(tile[tileNum].image, screenX, screenY, tileSize, tileSize, null);
             }
         }
-    }
+}
 
     public void drawCollisionAreas(Graphics2D g2, Viewpoint viewpoint) {
         g2.setColor(new Color(255, 0, 0, 100));

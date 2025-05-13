@@ -126,12 +126,10 @@ public class Player extends Enity {
     public void update() {
         damageArea = new Rectangle(x,y,width,height);
 
-
         //check tile collision
         collisionOn = false;
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
-
 
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
@@ -161,7 +159,7 @@ public class Player extends Enity {
 
         if (keyHander.s_Pressed == true && action != "death" && !panel.cChecker.isCollisionDown()) {
             count = 2;
-            if (y + speedY + height <= panel.boardHeight) { // Kiểm tra giới hạn dưới
+            if (y + speedY + height <= panel.mapHeight) { // Kiểm tra giới hạn dưới
                 y += speedY;
                 worldY = y;
             }
@@ -203,7 +201,7 @@ public class Player extends Enity {
 
         if (keyHander.d_Pressed == true && action != "death" && !panel.cChecker.isCollisionRight()) {
             count = 4;
-            if (x + speedX + width <= panel.boardWidth) { // Kiểm tra giới hạn bên phải
+            if (x + speedX + width <= panel.mapWidth) { // Kiểm tra giới hạn bên phải
                 x += speedX;
                 worldX = x;
             }
@@ -356,7 +354,6 @@ public class Player extends Enity {
         }
 
         // when damaged
-
         if (action == "hurt"){
             if (direction_horizontal == "right"){
                 if (spriteNum_14Frame == 1){
@@ -492,15 +489,13 @@ public class Player extends Enity {
         g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
         //draw CollisionArea rectangle
         g2.setColor(Color.RED);
-        g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),
-                panel.cChecker.getPlayerTopWorldY(),
-                panel.cChecker.getPlayerRightWorldX()- panel.cChecker.getPlayerLeftWorldX(),
-                panel.cChecker.getPlayerBottomWorldY() - panel.cChecker.getPlayerTopWorldY());
+        // g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),
+        //         panel.cChecker.getPlayerTopWorldY(),
+        //         panel.cChecker.getPlayerRightWorldX()- panel.cChecker.getPlayerLeftWorldX(),
+        //         panel.cChecker.getPlayerBottomWorldY() - panel.cChecker.getPlayerTopWorldY());
 
         //draw damageArea rectangle
 //        g2.drawRect(damageArea.x, damageArea.y, damageArea.width, damageArea.height);
-
-
     }
 
     public void reset() {
@@ -515,5 +510,4 @@ public class Player extends Enity {
         this.direction_horizontal = "right";
         this.direction_vertical = "down";
     }
-
 }

@@ -264,26 +264,55 @@ public boolean canSeePlayer() {
                 worldX = x;
                 worldY = y;
             } else {
-                // Use Algorithm to find path
-                List<Point> path = BFSPathfinder.findPath(
-                    new Point(this.x / panel.tileSize, this.y / panel.tileSize),
-                    new Point(player.x / panel.tileSize, player.y / panel.tileSize),
-                    panel.tileManager.mapTileNum,
-                    panel.tileManager,
-                    panel.tileSize
-                );
-                if (path != null && path.size() > 1) {
-                    Point nextStep = path.get(1); // Lấy bước tiếp theo
-                    int moveX = nextStep.x * panel.tileSize - x;
-                    int moveY = nextStep.y * panel.tileSize - y;
+                // // Use Algorithm to find path
+                // List<Point> path = BFSPathfinder.findPath(
+                //     new Point(this.x / panel.tileSize, this.y / panel.tileSize),
+                //     new Point(player.x / panel.tileSize, player.y / panel.tileSize),
+                //     panel.tileManager.mapTileNum,
+                //     panel.tileManager,
+                //     panel.tileSize
+                // );
+                // if (path != null && path.size() > 1) {
+                //     Point nextStep = path.get(1); // Lấy bước tiếp theo
+                //     int moveX = nextStep.x * panel.tileSize - x;
+                //     int moveY = nextStep.y * panel.tileSize - y;
 
-                    // Kiểm tra va chạm trước khi di chuyển
-                    panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
+                //     // Kiểm tra va chạm trước khi di chuyển
+                //     panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
 
-                    if (!collisionOn) {
-                        x += moveX;
-                        y += moveY;
+                //     if (!collisionOn) {
+                //         x += moveX;
+                //         y += moveY;
+                //     }
+                // }
+                
+                int moveX = speed * directionX;
+                int moveY = speed * directionY;
+
+                // Call the tile-based collision check
+                panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
+
+                // Only move if not blocked
+                if (!collisionOn) {
+                    if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
+                        directionX *= -1;
                     }
+                    if (y + moveY <= 0 || y + moveY + height >= panel.boardHeight) {
+                        directionY *= -1;
+                    }
+                    x += moveX;
+                    y += moveY;
+                    x = Math.max(0, Math.min(x, panel.boardWidth - width));
+                    y = Math.max(0, Math.min(y, panel.boardHeight - height));
+
+                    worldX = x;
+                    worldY = y;
+                }
+
+                if (directionX > 0) {
+                    action = "moveRight";
+                } else {
+                    action = "moveLeft";
                 }
             }
         }
@@ -295,7 +324,7 @@ public boolean canSeePlayer() {
         //         }
         //     }
         // } else {
-        //     action = "stand"; // hoặc "patrol", tùy logic bạn muốn
+        //     action = "stand";
         // }
 
 

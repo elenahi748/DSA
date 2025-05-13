@@ -21,19 +21,15 @@ public class Panel extends JPanel implements Runnable {
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
-    public final int maxScreenCol = 30;
-    public final int maxScreenRow = 15;
+    public final int maxScreenCol = 20;
+    public final int maxScreenRow = 12;
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
 
-    public final int maxMapCol = 100;  // Ví dụ bản đồ có 100 cột
-public final int maxMapRow = 100;  // Ví dụ bản đồ có 100 hàng
-
-public final int mapWidth = maxMapCol * tileSize;
-public final int mapHeight = maxMapRow * tileSize;
-
-public final int screenWidth = maxScreenCol * tileSize;
-public final int screenHeight = maxScreenRow * tileSize;
+    public final int maxMapCol = 30;
+    public final int maxMapRow = 18;
+    public final int mapWidth = maxMapCol * tileSize;
+    public final int mapHeight = maxMapRow * tileSize;
 
     //Tiles
     public TileManager tileM = new TileManager(this);
@@ -78,10 +74,7 @@ public final int screenHeight = maxScreenRow * tileSize;
     private Viewpoint viewpoint;
     
     public Panel() {
-        int mapWidth = tileSize * maxMapCol; // maxMapCol là số cột thực của bản đồ (KHÔNG phải maxScreenCol)
-int mapHeight = tileSize * maxMapRow;
-viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
-        
+        viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
         tileManager = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
@@ -269,12 +262,23 @@ viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        // Fill nền panel trước (tránh vùng trống)
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, getWidth(), getHeight());
         viewpoint.follow(player.x, player.y);
 
+        int drawWidth = Math.min(boardWidth, mapWidth - viewpoint.x);
+        int drawHeight = Math.min(boardHeight, mapHeight - viewpoint.y);
+        
         // Draw the background image
         if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight,
-                viewpoint.x, viewpoint.y, viewpoint.x + viewpoint.width, viewpoint.y + viewpoint.height, null);
+                g2.drawImage(
+                backgroundImage,
+                0, 0, drawWidth, drawHeight,  // Vị trí và kích thước vẽ trên panel
+                viewpoint.x, viewpoint.y,
+                viewpoint.x + drawWidth, viewpoint.y + drawHeight, // Phần ảnh lấy từ background
+                null
+            );
         }
 
         tileM.draw(g2, viewpoint);
@@ -284,7 +288,6 @@ viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
         player.draw(g2, viewpoint);
         heart.draw(g2, viewpoint);
         gun.draw(g2, viewpoint);
-
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
@@ -323,7 +326,6 @@ viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
             g2.setFont(new Font("Arial", Font.ITALIC, 30));
             g2.drawString("Enter to restart", boardWidth / 2 - 145, boardHeight / 2+70);
         }
-
         g2.dispose();
     }
 }

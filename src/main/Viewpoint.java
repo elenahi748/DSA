@@ -20,5 +20,8 @@ public class Viewpoint {
         if (y < 0) y = 0;
         if (x > mapWidth - width) x = mapWidth - width;
         if (y > mapHeight - height) y = mapHeight - height;
+
+        if (mapWidth <= width) x = 0;
+        if (mapHeight <= height) y = 0;
     }
 }
