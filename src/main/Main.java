@@ -18,10 +18,12 @@ public class Main extends JFrame {
         // Create the menu and game panels
         MenuPanel menuPanel = new MenuPanel(mainPanel, cardLayout);
         Panel gamePanel = new Panel();
+        MapPanel mapPanel = new MapPanel();
 
         // Add panels to the main panel
         mainPanel.add(menuPanel, "Menu");
         mainPanel.add(gamePanel, "Game");
+        mapPanel.add(mapPanel, "Map");
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int scaledWidth = (int) (screenSize.width * 0.9);

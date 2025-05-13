@@ -78,8 +78,7 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Chuyển sang giao diện chọn Map, bạn cần tạo JPanel cho "Map"
-                cardLayout.show(mainPanel, "Map");
-                // TODO: Nếu cần xử lý gì thêm khi vào menu map (load danh sách map, ...)
+                cardLayout.show(mapPanel, "Map");
             }
         });
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
