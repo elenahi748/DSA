@@ -19,14 +19,12 @@ public class Main extends JFrame {
         this.setResizable(false);
 
         // Create a CardLayout to switch between panels
-        CardLayout cardLayout = new CardLayout();
-        JPanel mainPanel = new JPanel(cardLayout);
+        cardLayout = new CardLayout(); // GÁN cho biến THÀNH VIÊN
+        mainPanel = new JPanel(cardLayout);
 
-        // Create the menu and game panels
-        MenuPanel menuPanel = new MenuPanel(mainPanel, cardLayout, this);
+        menuPanel = new MenuPanel(mainPanel, cardLayout, this);
         MapPanel mapPanel = new MapPanel(mainPanel, cardLayout, this);
-        Panel gamePanel = new Panel(mainPanel, cardLayout, this);
-
+        gamePanel = new Panel(mainPanel, cardLayout, this);
         // Add panels to the main panel
         mainPanel.add(menuPanel, "Menu");
         mainPanel.add(gamePanel, "Game");
@@ -86,6 +84,12 @@ public class Main extends JFrame {
         cardLayout.show(mainPanel, "Game");
         // Cần gọi startGameThread() ở Panel tại đây nếu muốn
     }
+    public void startGame() {
+        gamePanel.resetGame();
+        cardLayout.show(mainPanel, "Game");
+        gamePanel.requestFocusInWindow();
+        gamePanel.startGameThread();
+    }
     public void showGameOver() {
         gameOverPanel.setVisible(true);
         gameOverPanel.repaint();
@@ -96,7 +100,8 @@ public class Main extends JFrame {
     }
 
     public void backToMenu() {
-        hideGameOver();
+        gameOverPanel.setVisible(false);
+        gamePanel.resetGame();
         cardLayout.show(mainPanel, "Menu");
     }
     public static void main(String[] args) {

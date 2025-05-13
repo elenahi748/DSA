@@ -59,8 +59,6 @@ public class MenuPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(mainPanel, "Game");
-
-                // Thay đổi hình nền và bắt đầu game
                 for (Component comp : mainPanel.getComponents()) {
                     if (comp instanceof Panel) {
                         Panel gamePanel = (Panel) comp;
