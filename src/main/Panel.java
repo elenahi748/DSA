@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class Panel extends JPanel implements Runnable {
-
+    private Main mainFrame;
     // SCREEN SETTING
     final int originalTileSize = 16;
     final int scale = 3;
@@ -74,6 +74,7 @@ public class Panel extends JPanel implements Runnable {
     private Viewpoint viewpoint;
     
     public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
+        this.mainFrame = mainFrame;
         viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
         tileManager = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
@@ -193,7 +194,7 @@ public class Panel extends JPanel implements Runnable {
             }
 
 
-            if (System.currentTimeMillis() - startTime >= 20000) { //Boss: 200
+            if (System.currentTimeMillis() - startTime >= 200) { //Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();
@@ -209,6 +210,7 @@ public class Panel extends JPanel implements Runnable {
             warriors.clear();
             activeBoss = null;
             gameOver = true; // Đánh dấu game over
+            if (mainFrame != null) mainFrame.showGameOver();
         }
         if (activeBoss != null) {
             for (Bullet bullet : bullets) {
@@ -312,11 +314,7 @@ public class Panel extends JPanel implements Runnable {
         }
 
         if (gameOver) {
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.setFont(new Font("Arial", Font.BOLD, 60));
-            g2.drawString("GAME OVER", boardWidth / 2 - 180, boardHeight / 2);
-            g2.setFont(new Font("Arial", Font.ITALIC, 30));
-            g2.drawString("Enter to restart", boardWidth / 2 - 100, boardHeight / 2+70);
+            
         }
 
         if (gameWon) {
