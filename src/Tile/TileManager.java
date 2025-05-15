@@ -34,7 +34,7 @@ public class TileManager {
         width = panel.tileSize * 4 / 3;
         height = panel.tileSize * 4 / 3;
         getTileImage();
-        loadMap("/Mapdata/Map02.txt");
+        loadMap("/Mapdata/Map01.txt"); //Map
     }
 
 
@@ -85,7 +85,23 @@ public void draw(Graphics2D g2, Viewpoint viewpoint) {
                 g2.drawImage(tile[tileNum].image, screenX, screenY, tileSize, tileSize, null);
             }
         }
-}
+    }
+    
+    public boolean[][] getWalkableMap() {
+        int cols = panel.maxScreenCol;
+        int rows = panel.maxScreenRow;
+
+        boolean[][] walkableMap = new boolean[cols][rows];
+
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                int tileIndex = mapTileNum[col][row];
+                walkableMap[col][row] = !tile[tileIndex].collision; //trả về true nếu đi đưọc (collision = false)
+            }
+        }
+
+        return walkableMap;
+    }
 
     public void drawCollisionAreas(Graphics2D g2, Viewpoint viewpoint) {
         g2.setColor(new Color(255, 0, 0, 100));
