@@ -16,19 +16,20 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class Panel extends JPanel implements Runnable {
-
+    private Main mainFrame;
     // SCREEN SETTING
     final int originalTileSize = 16;
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
-    public int maxScreenCol = 30;
-    public int maxScreenRow = 15;
-    public int boardWidth = maxScreenCol * tileSize;
-    public int boardHeight = maxScreenRow * tileSize;
-    
-    // Viewport Offset (Camera)
-    public int viewportX = 0;
-    public int viewportY = 0;
+    public final int maxScreenCol = 20;
+    public final int maxScreenRow = 12;
+    public final int boardWidth = maxScreenCol * tileSize;
+    public final int boardHeight = maxScreenRow * tileSize;
+
+    public final int maxMapCol = 30;
+    public final int maxMapRow = 18;
+    public final int mapWidth = maxMapCol * tileSize;
+    public final int mapHeight = maxMapRow * tileSize;
 
     //Tiles
     public TileManager tileM = new TileManager(this);
@@ -48,12 +49,11 @@ public class Panel extends JPanel implements Runnable {
     Heart heart = new Heart(player);
     Gun gun = new Gun(player);
     Bullet bullet = new Bullet(gun);
-    Warrior warrior = new Warrior(player);
+    Warrior warrior = new Warrior(player, tileM);
 
     public static ArrayList<Bullet> bullets;
     public static ArrayList<Warrior> warriors;
     public static Boss activeBoss = null;
-
     private long startTime = 0;
     private boolean stopWarriorCreation = false;
     private boolean bossCreated = false;
@@ -68,17 +68,19 @@ public class Panel extends JPanel implements Runnable {
     private boolean showBossMessage = false; // Trạng thái hiển thị thông báo
     private long bossMessageStartTime = 0;
 
-    public Panel() {
-        boardWidth = maxScreenCol * tileSize;
-        boardHeight = maxScreenRow * tileSize;
-
+    // viewpoint (Camera)
+    private Viewpoint viewpoint;
+    
+    public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
+        this.mainFrame = mainFrame;
+        viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
+        tileM = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyHander);
         this.setFocusable(true);
-
-//sound.playLoopedSound("game-music.wav");
+        //sound.playLoopedSound("game-music.wav");
 
         // Load the background image
         try {
@@ -96,6 +98,12 @@ public class Panel extends JPanel implements Runnable {
         if (gameThread == null || !gameThread.isAlive()) {
             gameThread = new Thread(this);
             gameThread.start();
+        }
+    }
+    public void setMapType(String mapType) {
+        if (tileM != null) {
+            tileM.setMap(mapType);
+            System.err.println("tileM is null in setMapType!");
         }
     }
 
@@ -129,29 +137,10 @@ public class Panel extends JPanel implements Runnable {
             }
             return;
         }
-        // Update various game components
+
         player.update();
         heart.update();
-        gun.update();
-        bullet.update1();
 
-        // Calculate viewport based on Player position
-        viewportX = player.x - getWidth() / 2;
-        viewportY = player.y - getHeight() / 2;
-
-        // Giới hạn khung nhìn để không hiển thị bên ngoài bản đồ
-        if (viewportX < 0) {
-            viewportX = 0;
-        }
-        if (viewportY < 0) {
-            viewportY = 0;
-        }
-        if (viewportX > boardWidth - getWidth()) {
-            viewportX = boardWidth - getWidth();
-        }
-        if (viewportY > boardHeight - getHeight()) {
-            viewportY = boardHeight - getHeight();
-        }
         if (player.spriteNum_14Frame == 2) {
             heart.started_action = false;
         }
@@ -203,7 +192,7 @@ public class Panel extends JPanel implements Runnable {
             }
 
 
-            if (System.currentTimeMillis() - startTime >= 200) {
+            if (System.currentTimeMillis() - startTime >= 2000) { //Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();
@@ -219,6 +208,7 @@ public class Panel extends JPanel implements Runnable {
             warriors.clear();
             activeBoss = null;
             gameOver = true; // Đánh dấu game over
+            if (mainFrame != null) mainFrame.showGameOver();
         }
         if (activeBoss != null) {
             for (Bullet bullet : bullets) {
@@ -259,52 +249,65 @@ public class Panel extends JPanel implements Runnable {
         heart.reset();
         bullets.clear();
         warriors.clear();
+
         activeBoss = null;
         stopWarriorCreation = false;
         bossCreated = false;
         startTime = 0;
         gameOver = false;
         gameWon = false;
+
+        for (Warrior warrior : warriors) {
+            warrior.clearBfsCache();
+        }
 //sound.playLoopedSound("game-music.wav");
     }
-
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        // Fill nền panel trước (tránh vùng trống)
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        viewpoint.follow(player.x, player.y);
+
+        int drawWidth = Math.min(boardWidth, mapWidth - viewpoint.x);
+        int drawHeight = Math.min(boardHeight, mapHeight - viewpoint.y);
         
-        double scaleX = (double) this.getWidth() / boardWidth;
-        double scaleY = (double) this.getHeight() / boardHeight;
-        double scale = Math.min(scaleX, scaleY);
-
-        g2.scale(scale, scale);
-        g2.translate(-viewportX, -viewportY);
-
         // Draw the background image
         if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, boardWidth, boardHeight, null);
+                g2.drawImage(
+                backgroundImage,
+                0, 0, drawWidth, drawHeight,  // Vị trí và kích thước vẽ trên panel
+                viewpoint.x, viewpoint.y,
+                viewpoint.x + drawWidth, viewpoint.y + drawHeight, // Phần ảnh lấy từ background
+                null
+            );
         }
 
-        tileM.draw(g2);
-        tileM.drawCollisionAreas(g2);
+        tileM.draw(g2, viewpoint);
+        tileM.drawCollisionAreas(g2, viewpoint);
+
         // Draw other game elements
-        player.draw(g2);
-        heart.draw(g2);
-        gun.draw(g2);
+        player.draw(g2, viewpoint);
+        heart.draw(g2, viewpoint);
+        gun.draw(g2, viewpoint);
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
-                bullets.get(i).draw(g2);
+                bullets.get(i).draw(g2, viewpoint);
             }
         }
 
         if (warriors != null) {
             for (int i = 0; i < warriors.size(); i++) {
-                warriors.get(i).draw(g2);
+                warriors.get(i).draw(g2, viewpoint);
             }
         }
 
         if (activeBoss != null) {
-            activeBoss.draw(g2);
+            activeBoss.draw(g2, viewpoint);
         }
 
         if (showBossMessage) {
@@ -313,13 +316,9 @@ public class Panel extends JPanel implements Runnable {
             g2.drawString("Boss is coming!", boardWidth / 2 - 100, boardHeight / 2);
         }
 
-        if (gameOver) {
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.setFont(new Font("Arial", Font.BOLD, 60));
-            g2.drawString("GAME OVER", boardWidth / 2 - 180, boardHeight / 2);
-            g2.setFont(new Font("Arial", Font.ITALIC, 30));
-            g2.drawString("Enter to restart", boardWidth / 2 - 100, boardHeight / 2+70);
-        }
+        // if (gameOver) {
+            
+        // }
 
         if (gameWon) {
             g2.setColor(Color.YELLOW);
@@ -328,7 +327,7 @@ public class Panel extends JPanel implements Runnable {
             g2.setFont(new Font("Arial", Font.ITALIC, 30));
             g2.drawString("Enter to restart", boardWidth / 2 - 145, boardHeight / 2+70);
         }
-        g2.translate(viewportX, viewportY);
         g2.dispose();
     }
 }
+

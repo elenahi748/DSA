@@ -1,7 +1,7 @@
 package Tile;
 
-import main.MenuPanel;
 import main.Panel;
+import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -13,32 +13,43 @@ import java.io.InputStreamReader;
 
 public class TileManager {
 
-    private  MenuPanel gp;
-
-    public Tile[] tile;
+    private Panel panel;
+    public  Tile[] tile;
     public int mapTileNum[][];
+    private boolean[][] walkableMapCache;
+    private boolean walkableMapDirty = true;
 
-    private int baseX = 0, baseY = 0, offset = 64;
+    //private final int width, height;
 
-    Panel panel;
-    private int width, height;
-
-    public TileManager(Panel panel)
-    {
-        this.panel = panel;
+    public TileManager(Panel panel){
         tile = new Tile[10];
-        int mapCols = panel.maxScreenCol;
-        int mapRows = panel.maxScreenRow;
+        this.panel = panel;
+        mapTileNum = new int[panel.maxMapCol][panel.maxMapRow];
 
-        mapTileNum = new int[mapCols][mapRows]; // Đồng bộ kích thước với World
+        // width = panel.tileSize * 4 / 3;
+        // height = panel.tileSize * 4 / 3;
         getTileImage();
-        loadMap("/Mapdata/Map02.txt");
+        // loadMap("/Mapdata/Map01.txt"); //Map
+    }
+
+    public void setMap(String mapType) {
+        String mapPath = "/Mapdata/Map01.txt"; // Mặc định là Tiny (Map01)
+
+        if ("Tiny".equals(mapType)) {
+            mapPath = "/Mapdata/Map01.txt";
+        } else if ("Medium".equals(mapType)) {
+            mapPath = "/Mapdata/Map02.txt";
+        } else if ("Big".equals(mapType)) {
+            mapPath = "/Mapdata/Map03.txt";
         }
+
+        loadMap(mapPath);
+    }
 
     public void getTileImage() {
         try {
             tile[0] = new Tile();
-            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png")); // Đảm bảo đường dẫn đúng
+            tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png"));
             tile[0].collision = true;
 
             tile[1] = new Tile();
@@ -49,84 +60,94 @@ public class TileManager {
         }
     }
 
-    public void loadMap(String filePath){
-        try {
-            InputStream  is = getClass().getResourceAsStream(filePath);
-            if (is == null) {
-                throw new RuntimeException("Could not load /Maps/Map02.txt");
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    public void loadMap(String filePath) {
+        System.out.println("Loading map from: " + filePath); // Log để debug
+        try (InputStream is = getClass().getResourceAsStream(filePath);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
-            int col = 0;
-            int row = 0;
-            while (col<panel.maxScreenCol && row< panel.maxScreenRow)
-            {
+            for (int row = 0; row < panel.maxMapRow; row++) {
                 String line = br.readLine();
+                if (line == null) break; // Nếu không có thêm dòng nào, dừng đọc
+                String[] numbers = line.trim().split(" ");
 
-                while(col < panel.maxScreenCol)
-                {
-                    String numbers[] = line.split(" ");
-                    int num = Integer.parseInt(numbers[col]);
-                    mapTileNum[col][row] = num;
-                    col++;
-                }
-                if (col == panel.maxScreenCol){
-                    col = 0;
-                    row++;
+                for (int col = 0; col < panel.maxMapCol; col++) {
+                    int num = 0; // Mặc định là tile "wall"
+                    if (col < numbers.length) {
+                        try {
+                            num = Integer.parseInt(numbers[col]);
+                        } catch (NumberFormatException e) {
+                            System.err.println("Invalid tile number at row " + row + ", col " + col);
+                        }
+                    }
+                    // Đảm bảo chỉ số tile hợp lệ
+                    mapTileNum[col][row] = Math.max(0, Math.min(num, tile.length - 1));
                 }
             }
-            br.close();
-        } catch (Exception e) {
-
+            markWalkableMapDirty();
+        } catch (IOException e) {
+            System.err.println("Failed to load map from: " + filePath);
+            e.printStackTrace();
         }
     }
 
-    public void draw(Graphics2D g2) {
-        // Determine visible tiles based on viewport
-        int startCol = panel.viewportX / panel.tileSize;
-        int endCol = (panel.viewportX + panel.boardWidth) / panel.tileSize;
-        int startRow = panel.viewportY / panel.tileSize;
-        int endRow = (panel.viewportY + panel.boardHeight) / panel.tileSize;
+    public void draw(Graphics2D g2, Viewpoint viewpoint) {
+        int tileSize = panel.tileSize;
 
-        // Clamp to map boundaries
-        startCol = Math.max(0, startCol);
-        endCol = Math.min(mapTileNum.length - 1, endCol);
-        startRow = Math.max(0, startRow);
-        endRow = Math.min(mapTileNum[0].length - 1, endRow);
+        int startCol = viewpoint.x / tileSize;
+        int endCol = Math.min((viewpoint.x + panel.boardWidth) / tileSize, panel.maxMapCol - 1);
+        int startRow = viewpoint.y / tileSize;
+        int endRow = Math.min((viewpoint.y + panel.boardHeight) / tileSize, panel.maxMapRow - 1);
 
-        // Render visible tiles
         for (int row = startRow; row <= endRow; row++) {
             for (int col = startCol; col <= endCol; col++) {
                 int tileNum = mapTileNum[col][row];
-                int drawX = col * panel.tileSize - panel.viewportX;
-                int drawY = row * panel.tileSize - panel.viewportY;
 
-                g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
+                if (tileNum < 0 || tileNum >= tile.length || tile[tileNum] == null) {
+                    continue;
+                }
+
+                int screenX = col * tileSize - viewpoint.x;
+                int screenY = row * tileSize - viewpoint.y;
+                g2.drawImage(tile[tileNum].image, screenX, screenY, tileSize, tileSize, null);
             }
         }
     }
 
-    public void drawCollisionAreas(Graphics2D g2) {
-        g2.setColor(new Color(255, 0, 0, 100)); // Semi-transparent red
-        //player wall collision
-//        for (int row = 0; row < panel.maxScreenRow; row++) {
-//            for (int col = 0; col < panel.maxScreenCol; col++) {
-//                int tileNum = mapTileNum[col][row];
-//                if (tile[tileNum].collision) {
-//                    // Draw collision rectangle
-//                    int x = col * panel.tileSize;
-//                    int y = row * panel.tileSize;
-//                    g2.fillRect(x, y, panel.tileSize, panel.tileSize);
-//                }
-//            }
-        for (int row = 0; row < mapTileNum[0].length; row++) {
-        for (int col = 0; col < mapTileNum.length; col++) {
-            int tileNum = mapTileNum[col][row];
-            int drawX = col * panel.tileSize;
-            int drawY = row * panel.tileSize;
+    public boolean[][] getWalkableMap() {
+        int cols = panel.maxScreenCol;
+        int rows = panel.maxScreenRow;
 
-            g2.drawImage(tile[tileNum].image, drawX, drawY, panel.tileSize, panel.tileSize, null);
+        boolean[][] walkableMap = new boolean[cols][rows];
+
+        if (walkableMapDirty) {
+            // Làm mới cache nếu cần
+            walkableMapCache = new boolean[panel.maxMapCol][panel.maxMapRow];
+            for (int row = 0; row < panel.maxMapRow; row++) {
+                for (int col = 0; col < panel.maxMapCol; col++) {
+                    walkableMapCache[col][row] = !tile[mapTileNum[col][row]].collision;
+                }
             }
+            walkableMapDirty = false; // Cache đã được làm mới
         }
+        return walkableMap;
+    }
+    public void markWalkableMapDirty() {
+        walkableMapDirty = true;
+    }
+    public void drawCollisionAreas(Graphics2D g2, Viewpoint viewpoint) {
+        g2.setColor(new Color(255, 0, 0, 100));
+        // for (int row = 0; row < panel.maxScreenRow; row++) {
+        //     for (int col = 0; col < panel.maxScreenCol; col++) {
+        //         int tileNum = mapTileNum[col][row];
+
+        //         if (tileNum < 0 || tileNum >= tile.length || !tile[tileNum].collision) {
+        //             continue;
+        //         }
+
+        //         int x = col * panel.tileSize - viewpoint.x;
+        //         int y = row * panel.tileSize - viewpoint.y;
+        //         g2.fillRect(x, y, panel.tileSize, panel.tileSize);
+        //     }
+        // }
     }
 }
