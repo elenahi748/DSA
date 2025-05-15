@@ -249,12 +249,17 @@ public class Panel extends JPanel implements Runnable {
         heart.reset();
         bullets.clear();
         warriors.clear();
+
         activeBoss = null;
         stopWarriorCreation = false;
         bossCreated = false;
         startTime = 0;
         gameOver = false;
         gameWon = false;
+
+        for (Warrior warrior : warriors) {
+            warrior.clearBfsCache();
+        }
 //sound.playLoopedSound("game-music.wav");
     }
     @Override
@@ -311,9 +316,9 @@ public class Panel extends JPanel implements Runnable {
             g2.drawString("Boss is coming!", boardWidth / 2 - 100, boardHeight / 2);
         }
 
-        if (gameOver) {
+        // if (gameOver) {
             
-        }
+        // }
 
         if (gameWon) {
             g2.setColor(Color.YELLOW);

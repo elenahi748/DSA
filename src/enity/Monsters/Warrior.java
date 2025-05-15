@@ -6,17 +6,17 @@ import main.KeyHander;
 import main.Panel;
 import main.Viewpoint;
 import enity.Bullet;
-
-import javax.imageio.ImageIO;
-
 import Tile.TileManager;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
@@ -39,6 +39,7 @@ public class Warrior extends Enity {
     private boolean isDead = false;
     private TileManager tileM;
     List<PathNode> path_bsf;
+    private Map<String, List<PathNode>> bfsCache;
 
     private long spamMonsterTimer;
 
@@ -51,12 +52,17 @@ public class Warrior extends Enity {
         this.keyHander = player.keyHander;
         this.player = player;
         this.tileM = tileM;
+        this.bfsCache = new HashMap<>();
 
         setDefaltValues_Warrior();
         getWarriorImage();
 
         direction_horizontal = "right";
         spamMonsterTimer = System.nanoTime();
+    }
+
+    private String generateCacheKey(int startX, int startY, int goalX, int goalY) {
+        return startX + "," + startY + "->" + goalX + "," + goalY;
     }
 
     public void setDefaltValues_Warrior() {
@@ -267,9 +273,14 @@ public class Warrior extends Enity {
         }
     }
 
-        public List<PathNode> bfs(int startX, int startY, int goalX, int goalY, boolean[][] walkable) {
-        int cols = walkable.length;       // Số cột     //walkableMap[col][row] = [x][y]
-        int rows = walkable[0].length;    // Số hàng
+    public List<PathNode> bfs(int startX, int startY, int goalX, int goalY, boolean[][] walkable) {
+        String cacheKey = generateCacheKey(startX, startY, goalX, goalY);
+        if (bfsCache.containsKey(cacheKey)) {
+            return bfsCache.get(cacheKey);
+        }
+
+        int cols = walkable.length;
+        int rows = walkable[0].length;
 
         if (startX < 0 || startY < 0 || startX >= cols || startY >= rows ||
                 goalX < 0 || goalY < 0 || goalX >= cols || goalY >= rows) {
@@ -293,6 +304,7 @@ public class Warrior extends Enity {
                     path.add(p);
                 }
                 Collections.reverse(path);
+                bfsCache.put(cacheKey, path);
                 return path;
             }
 
@@ -306,9 +318,13 @@ public class Warrior extends Enity {
                 }
             }
         }
+        bfsCache.put(cacheKey, null);
         return null;
     }
     
+    public void clearBfsCache() {
+        bfsCache.clear();
+    }
     /// ////////////// debug only
 //    public void printWalkableMap() {
 //        boolean[][] walkableMap = tileM.getWalkableMap();

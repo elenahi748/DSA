@@ -13,20 +13,21 @@ import java.io.InputStreamReader;
 
 public class TileManager {
 
+    private Panel panel;
     public  Tile[] tile;
     public int mapTileNum[][];
+    private boolean[][] walkableMapCache;
+    private boolean walkableMapDirty = true;
 
-    private Panel panel;
-    private final int width, height;
+    //private final int width, height;
 
-    public TileManager(Panel panel)
-    {
+    public TileManager(Panel panel){
         tile = new Tile[10];
         this.panel = panel;
         mapTileNum = new int[panel.maxMapCol][panel.maxMapRow];
 
-        width = panel.tileSize * 4 / 3;
-        height = panel.tileSize * 4 / 3;
+        // width = panel.tileSize * 4 / 3;
+        // height = panel.tileSize * 4 / 3;
         getTileImage();
         // loadMap("/Mapdata/Map01.txt"); //Map
     }
@@ -82,7 +83,7 @@ public class TileManager {
                     mapTileNum[col][row] = Math.max(0, Math.min(num, tile.length - 1));
                 }
             }
-
+            markWalkableMapDirty();
         } catch (IOException e) {
             System.err.println("Failed to load map from: " + filePath);
             e.printStackTrace();
@@ -118,15 +119,21 @@ public class TileManager {
 
         boolean[][] walkableMap = new boolean[cols][rows];
 
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                int tileIndex = mapTileNum[col][row];
-                walkableMap[col][row] = !tile[tileIndex].collision; //trả về true nếu đi đưọc (collision = false)
+        if (walkableMapDirty) {
+            // Làm mới cache nếu cần
+            walkableMapCache = new boolean[panel.maxMapCol][panel.maxMapRow];
+            for (int row = 0; row < panel.maxMapRow; row++) {
+                for (int col = 0; col < panel.maxMapCol; col++) {
+                    walkableMapCache[col][row] = !tile[mapTileNum[col][row]].collision;
+                }
             }
+            walkableMapDirty = false; // Cache đã được làm mới
         }
         return walkableMap;
     }
-
+    public void markWalkableMapDirty() {
+        walkableMapDirty = true;
+    }
     public void drawCollisionAreas(Graphics2D g2, Viewpoint viewpoint) {
         g2.setColor(new Color(255, 0, 0, 100));
         // for (int row = 0; row < panel.maxScreenRow; row++) {
