@@ -108,6 +108,9 @@ public class Panel extends JPanel implements Runnable {
             gameThread.start();
         }
     }
+    public void setMapType(String mapType) {
+        tileManager.setMap(mapType); // Gọi setMap từ TileManager
+    }
 
     @Override
     public void run() {

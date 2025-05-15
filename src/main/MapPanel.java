@@ -12,12 +12,16 @@ import javax.imageio.ImageIO;
 
 public class MapPanel extends JPanel {
     private Image backgroundImage;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
 
     private static final int BUTTON_WIDTH = 220;
     private static final int BUTTON_HEIGHT = 48;
     private static final Dimension BUTTON_SIZE = new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT);
 
     public MapPanel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
+        this.mainPanel = mainPanel;
+        this.cardLayout = cardLayout;
         // Load background image
         try {
             backgroundImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/background/main_bg.png")));
@@ -45,43 +49,21 @@ public class MapPanel extends JPanel {
         // Add Tiny Button
         JButton tinyButton = new JButton("Tiny");
         styleButton(tinyButton);
-        tinyButton.addActionListener((ActionEvent e) -> {
-            // Xử lý chọn Tiny map ở đây (ví dụ: lưu lựa chọn)
-            // ...
-            cardLayout.show(mainPanel, "Game"); // Chuyển sang game luôn, hoặc về menu
-        });
+        tinyButton.addActionListener(e -> handleMapSelection("Tiny"));
         centerPanel.add(tinyButton);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Add Medium Button
         JButton mediumButton = new JButton("Medium");
         styleButton(mediumButton);
-        mediumButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayout.show(mainPanel, "Game");
-
-                // Thay đổi hình nền và bắt đầu game
-                for (Component comp : mainPanel.getComponents()) {
-                    if (comp instanceof Panel) {
-                        Panel gamePanel = (Panel) comp;
-                        gamePanel.setBackgroundImage("/background/main3_bg.png"); // Đổi hình nền
-                        gamePanel.startGameThread(); // Bắt đầu game
-                    }
-                }
-            }
-        });
+        mediumButton.addActionListener(e -> handleMapSelection("Medium"));
         centerPanel.add(mediumButton);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Add Big Button
         JButton bigButton = new JButton("Big");
         styleButton(bigButton);
-        bigButton.addActionListener((ActionEvent e) -> {
-            // Xử lý chọn Big map ở đây
-            // ...
-            cardLayout.show(mainPanel, "Game");
-        });
+        bigButton.addActionListener(e -> handleMapSelection("Big"));
         centerPanel.add(bigButton);
 
         // Back to Main Menu
@@ -92,6 +74,17 @@ public class MapPanel extends JPanel {
         centerPanel.add(backButton);
 
         add(centerPanel, gbc);
+    }
+
+    private void handleMapSelection(String mapType) {
+        for (Component comp : mainPanel.getComponents()) {
+            if (comp instanceof Panel) {
+                Panel gamePanel = (Panel) comp;
+                gamePanel.setMapType(mapType); // Chọn map
+                gamePanel.startGameThread();  // Bắt đầu game
+            }
+        }
+        cardLayout.show(mainPanel, "Game");
     }
 
     private void styleButton(JButton button) {
