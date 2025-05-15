@@ -49,7 +49,7 @@ public class Panel extends JPanel implements Runnable {
     Heart heart = new Heart(player);
     Gun gun = new Gun(player);
     Bullet bullet = new Bullet(gun);
-    Warrior warrior = new Warrior(player);
+    Warrior warrior = new Warrior(player, tileM);
 
     public static ArrayList<Bullet> bullets;
     public static ArrayList<Warrior> warriors;
@@ -67,8 +67,6 @@ public class Panel extends JPanel implements Runnable {
 
     private boolean showBossMessage = false; // Trạng thái hiển thị thông báo
     private long bossMessageStartTime = 0;
-    
-    public TileManager tileManager;
 
     // viewpoint (Camera)
     private Viewpoint viewpoint;
@@ -76,19 +74,13 @@ public class Panel extends JPanel implements Runnable {
     public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         this.mainFrame = mainFrame;
         viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
-        tileManager = new TileManager(this);
+        tileM = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyHander);
         this.setFocusable(true);
-        if (tileManager.mapTileNum == null) {
-            System.out.println("mapTileNum is null in TileManager!");
-        } else {
-            System.out.println("mapTileNum initialized successfully.");
-        }
-
-//sound.playLoopedSound("game-music.wav");
+        //sound.playLoopedSound("game-music.wav");
 
         // Load the background image
         try {
@@ -109,7 +101,10 @@ public class Panel extends JPanel implements Runnable {
         }
     }
     public void setMapType(String mapType) {
-        tileManager.setMap(mapType); // Gọi setMap từ TileManager
+        if (tileM != null) {
+            tileM.setMap(mapType);
+            System.err.println("tileM is null in setMapType!");
+        }
     }
 
     @Override
@@ -197,7 +192,7 @@ public class Panel extends JPanel implements Runnable {
             }
 
 
-            if (System.currentTimeMillis() - startTime >= 200000) { //Boss: 200
+            if (System.currentTimeMillis() - startTime >= 2000) { //Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();

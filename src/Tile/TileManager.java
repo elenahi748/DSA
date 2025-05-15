@@ -16,14 +16,13 @@ public class TileManager {
     public  Tile[] tile;
     public int mapTileNum[][];
 
-    private final Panel panel;
+    private Panel panel;
     private final int width, height;
 
     public TileManager(Panel panel)
     {
         tile = new Tile[10];
         this.panel = panel;
-
         mapTileNum = new int[panel.maxMapCol][panel.maxMapRow];
 
         width = panel.tileSize * 4 / 3;

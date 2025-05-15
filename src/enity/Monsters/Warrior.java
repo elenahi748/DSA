@@ -46,10 +46,11 @@ public class Warrior extends Enity {
     KeyHander keyHander;
     Player player;
 
-    public Warrior(Player player) {
+    public Warrior(Player player, TileManager tileM) {
         this.panel = player.panel;
         this.keyHander = player.keyHander;
         this.player = player;
+        this.tileM = tileM;
 
         setDefaltValues_Warrior();
         getWarriorImage();
@@ -261,7 +262,7 @@ public class Warrior extends Enity {
     public void update1() {
         long currentTime = System.nanoTime();
         if (currentTime - spamMonsterTimer > 1500000000L) {
-            Panel.warriors.add(new Warrior(this.player));
+            Panel.warriors.add(new Warrior(this.player, this.tileM));
             spamMonsterTimer = currentTime;
         }
     }
@@ -395,8 +396,7 @@ public class Warrior extends Enity {
                         worldX = x;
                         y += speedY;
                         worldY = y;
-                    }
-                    else {
+                    } else {
                         // Get tile coordinates
                         int startTileX = x / panel.tileSize;
                         int startTileY = y / panel.tileSize;
@@ -412,8 +412,7 @@ public class Warrior extends Enity {
                         }
 
                         // Prepare the walkable map
-                        boolean[][] walkable = tileM.getWalkableMap(); // You need to implement this
-
+                        boolean[][] walkable = tileM != null ? tileM.getWalkableMap() : new boolean[panel.maxMapCol][panel.maxMapRow];
 
                         List<PathNode> path = bfs(startTileX, startTileY, goalTileX, goalTileY, walkable);
                         path_bsf = path;

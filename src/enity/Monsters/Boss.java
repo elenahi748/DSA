@@ -230,13 +230,13 @@ public class Boss extends Enity {
         }
     }
 public boolean canSeePlayer() {
-    if (panel.tileManager.mapTileNum == null) {
+    if (panel.tileM.mapTileNum == null) {
         throw new IllegalStateException("mapTileNum is null when calling canSeePlayer.");
     }
 
     Rectangle bossRect = new Rectangle(this.x, this.y, this.width, this.height);
     Rectangle playerRect = new Rectangle(player.x, player.y, player.width, player.height);
-    return Raycasting.canSeePlayer(bossRect, playerRect, panel.tileManager.mapTileNum, panel.tileManager, panel.tileSize);
+    return Raycasting.canSeePlayer(bossRect, playerRect, panel.tileM.mapTileNum, panel.tileM, panel.tileSize);
 }
     public boolean update2(){
         double distance_to_playerX = player.x-x;

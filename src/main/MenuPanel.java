@@ -61,12 +61,16 @@ public class MenuPanel extends JPanel {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                cardLayout.show(mainPanel, "Game");
+                cardLayout.show(mainPanel, "Game"); // Hiển thị màn hình Game
                 for (Component comp : mainPanel.getComponents()) {
                     if (comp instanceof Panel) {
                         Panel gamePanel = (Panel) comp;
-                        gamePanel.setBackgroundImage("/background/main3_bg.png"); // Đổi hình nền
-                        gamePanel.startGameThread(); // Bắt đầu game
+
+                        gamePanel.setMapType("Tiny");
+
+                        gamePanel.setBackgroundImage("/background/main3_bg.png");
+
+                        gamePanel.startGameThread();
                     }
                 }
             }
