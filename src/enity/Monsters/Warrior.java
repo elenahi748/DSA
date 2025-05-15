@@ -8,16 +8,37 @@ import main.Viewpoint;
 import enity.Bullet;
 
 import javax.imageio.ImageIO;
+
+import Tile.TileManager;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
+
+class PathNode {
+    int x, y;
+    PathNode parent;
+
+    public PathNode(int x, int y, PathNode parent) {
+        this.x = x;
+        this.y = y;
+        this.parent = parent;
+    }
+}
 
 public class Warrior extends Enity {
     int heart = 2;
     public int speed = 10;
     int distance_attack = 70;
     private boolean isDead = false;
+    private TileManager tileM;
+    List<PathNode> path_bsf;
 
     private long spamMonsterTimer;
 
@@ -245,6 +266,66 @@ public class Warrior extends Enity {
         }
     }
 
+        public List<PathNode> bfs(int startX, int startY, int goalX, int goalY, boolean[][] walkable) {
+        int cols = walkable.length;       // Số cột     //walkableMap[col][row] = [x][y]
+        int rows = walkable[0].length;    // Số hàng
+
+        if (startX < 0 || startY < 0 || startX >= cols || startY >= rows ||
+                goalX < 0 || goalY < 0 || goalX >= cols || goalY >= rows) {
+            return null;
+        }
+
+        boolean[][] visited = new boolean[cols][rows];
+        Queue<PathNode> queue = new LinkedList<>();
+        queue.add(new PathNode(startX, startY, null));
+        visited[startX][startY] = true;
+
+        int[] dx = {-1, 1, 0, 0}; // trái, phải
+        int[] dy = {0, 0, -1, 1}; // lên, xuống
+
+        while (!queue.isEmpty()) {
+            PathNode current = queue.poll();
+
+            if (current.x == goalX && current.y == goalY) {
+                List<PathNode> path = new ArrayList<>();
+                for (PathNode p = current; p != null; p = p.parent) {
+                    path.add(p);
+                }
+                Collections.reverse(path);
+                return path;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                int nx = current.x + dx[i];
+                int ny = current.y + dy[i];
+
+                if (nx >= 0 && ny >= 0 && nx < cols && ny < rows && walkable[nx][ny] && !visited[nx][ny]) {
+                    visited[nx][ny] = true;
+                    queue.add(new PathNode(nx, ny, current));
+                }
+            }
+        }
+        return null;
+    }
+    
+    /// ////////////// debug only
+//    public void printWalkableMap() {
+//        boolean[][] walkableMap = tileM.getWalkableMap();
+//        int cols = walkableMap.length;
+//        int rows = walkableMap[0].length;
+//
+//        for (int row = 0; row < rows; row++) {
+//            for (int col = 0; col < cols; col++) {
+//                if (walkableMap[col][row]) {
+//                    System.out.print("."); // Có thể đi
+//                } else {
+//                    System.out.print("#"); // Không thể đi
+//                }
+//            }
+//            System.out.println(); // Xuống dòng sau mỗi hàng
+//        }
+//    }
+
     public boolean update2() {
         double distance_to_playerX = player.x - x;
         double distance_to_playerY = player.y - y;
@@ -289,8 +370,7 @@ public class Warrior extends Enity {
         attackArea = new Rectangle(x, y, width, height);
         damageArea = new Rectangle(x, y, width, height);
 
-        if ((action == "attack1Right" || action == "attack1Left") && (action != "death")
-                && (this.attackArea.intersects(player.damageArea))) {
+        if ((action == "attack1Right" || action == "attack1Left") && (action != "death") && (this.attackArea.intersects(player.damageArea))) {
             player.takeDamage(0.5f);
         }
 
@@ -310,11 +390,60 @@ public class Warrior extends Enity {
                         spriteNum_5Frame = 1;
                     }
                     spriteCounter_5Frame = 0;
-                    if (!collisionOn) {
+                    if(!collisionOn) {
                         x += speedX;
                         worldX = x;
                         y += speedY;
                         worldY = y;
+                    }
+                    else {
+                        // Get tile coordinates
+                        int startTileX = x / panel.tileSize;
+                        int startTileY = y / panel.tileSize;
+                        int goalTileX = player.x / panel.tileSize;
+                        int goalTileY = player.y / panel.tileSize;
+
+                        // Kiểm tra tọa độ tile trước khi tiếp tục BFS
+                        if (startTileX < 0 || startTileY < 0 ||
+                                startTileX >= panel.maxScreenCol || startTileY >= panel.maxScreenRow ||
+                                goalTileX < 0 || goalTileY < 0 ||
+                                goalTileX >= panel.maxScreenCol || goalTileY >= panel.maxScreenRow) {
+                            return true; // Bỏ qua nếu nằm ngoài bản đồ
+                        }
+
+                        // Prepare the walkable map
+                        boolean[][] walkable = tileM.getWalkableMap(); // You need to implement this
+
+
+                        List<PathNode> path = bfs(startTileX, startTileY, goalTileX, goalTileY, walkable);
+                        path_bsf = path;
+                        if (path != null && path.size() > 1) {
+                            PathNode nextStep = path.get(1); // step after current
+
+                            double targetX = nextStep.x * panel.tileSize + panel.tileSize / 4.0;
+                            double targetY = nextStep.y * panel.tileSize + panel.tileSize /1.5;
+
+                            double deltaX = targetX - x;
+                            double deltaY = targetY - y;
+                            double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            if (distance == 0) distance = 1;
+
+                            /// /////////////////////////// update
+                            x += (speed / distance) * deltaX;
+                            y += (speed / distance) * deltaY;
+
+                            worldX = x;
+                            worldY = y;
+                            //printWalkableMap();
+
+//                            panel.cChecker.checkTileWarrior(this, speedX, speedY);
+//                            if (!collisionOn) {
+//                                x += speedX;
+//                                worldX = x;
+//                                y += speedY;
+//                                worldY = y;
+//                            }
+                        }
                     }
                 }
             }
@@ -609,6 +738,20 @@ public class Warrior extends Enity {
         // Draw collision area
         g2.setColor(new Color(255, 0, 0, 100));
         g2.fillRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y, collisionArea.width, collisionArea.height);
+
+        ///  ////////////////////////////////////
+        if (path_bsf != null) {
+            for (PathNode node : path_bsf) {
+                int tileX = node.x;
+                int tileY = node.y;
+
+                int screenX = tileX * panel.tileSize;
+                int screenY = tileY * panel.tileSize;
+
+                g2.setColor(new Color(0, 255, 157, 128)); // Màu đỏ, trong suốt
+                g2.fillRect(screenX, screenY, panel.tileSize, panel.tileSize);
+            }
+        }
     }
 
     public Rectangle getDamageArea() {

@@ -197,7 +197,7 @@ public class Panel extends JPanel implements Runnable {
             }
 
 
-            if (System.currentTimeMillis() - startTime >= 200) { //Boss: 200
+            if (System.currentTimeMillis() - startTime >= 200000) { //Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();

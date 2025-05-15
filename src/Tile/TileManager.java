@@ -122,7 +122,7 @@ public class TileManager {
         for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows; row++) {
                 int tileIndex = mapTileNum[col][row];
-                walkableMap[col][row] = tileIndex >= 0 && tileIndex < tile.length && !tile[tileIndex].collision;
+                walkableMap[col][row] = !tile[tileIndex].collision; //trả về true nếu đi đưọc (collision = false)
             }
         }
         return walkableMap;
