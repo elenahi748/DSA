@@ -345,6 +345,9 @@ public class Boss extends Enity {
     }
 
     public boolean update2() {
+        int mapWidth = panel.tileM.mapCol * panel.tileSize;
+        int mapHeight = panel.tileM.mapRow * panel.tileSize;
+
         double distance_to_playerX = player.x - x;
         double distance_to_playerY = player.y - y;
 
@@ -369,56 +372,35 @@ public class Boss extends Enity {
             }
         } else {
             if (canSeePlayer()) {
-                x += speedX;
-                y += speedY;
-                x = Math.max(0, Math.min(x, panel.boardWidth - width));
-                y = Math.max(0, Math.min(y, panel.boardHeight - height));
-
-                worldX = x;
-                worldY = y;
+                double newX = x + speedX;
+                double newY = y + speedY;
+                panel.cChecker.checkTileCollisionBoss(this, (int)speedX, (int)speedY);
+                if (!collisionOn) {
+                    x = (int) newX;
+                    y = (int) newY;
+                    // Giới hạn trong map
+                    x = Math.max(0, Math.min(x, mapWidth - width));
+                    y = Math.max(0, Math.min(y, mapHeight - height));
+                    worldX = x;
+                    worldY = y;
+                } else {
+                    // Đảo hướng nếu va chạm
+                    directionX *= -1;
+                    directionY *= -1;
+                }
             } else {
                 // Use Algorithm to find path
-                // List<Point> path = BFSPathfinder.findPath(
-                // new Point(this.x / panel.tileSize, this.y / panel.tileSize),
-                // new Point(player.x / panel.tileSize, player.y / panel.tileSize),
-                // panel.tileManager.mapTileNum,
-                // panel.tileManager,
-                // panel.tileSize
-                // );
-                // if (path != null && path.size() > 1) {
-                // Point nextStep = path.get(1); // Lấy bước tiếp theo
-                // int moveX = nextStep.x * panel.tileSize - x;
-                // int moveY = nextStep.y * panel.tileSize - y;
-
-                // // Kiểm tra va chạm trước khi di chuyển
-                // panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
-
-                // if (!collisionOn) {
-                // x += moveX;
-                // y += moveY;
-                // }
-                // }
 
                 int moveX = speed * directionX;
                 int moveY = speed * directionY;
-
-                // Call the tile-based collision check
                 panel.cChecker.checkTileCollisionBoss(this, moveX, moveY);
-
-                // Only move if not blocked
                 if (!collisionOn) {
-
-                    if (x + moveX <= 0 || x + moveX + width >= panel.boardWidth) {
-                        directionX *= -1;
-                    }
-                    if (y + moveY <= 0 || y + moveY + height >= panel.boardHeight) {
-                        directionY *= -1;
-                    }
+                    if (x + moveX <= 0 || x + moveX + width >= mapWidth) directionX *= -1;
+                    if (y + moveY <= 0 || y + moveY + height >= mapHeight) directionY *= -1;
                     x += moveX;
                     y += moveY;
-                    x = Math.max(0, Math.min(x, panel.boardWidth - width));
-                    y = Math.max(0, Math.min(y, panel.boardHeight - height));
-
+                    x = Math.max(0, Math.min(x, mapWidth - width));
+                    y = Math.max(0, Math.min(y, mapHeight - height));
                     worldX = x;
                     worldY = y;
                 }
@@ -430,19 +412,6 @@ public class Boss extends Enity {
                 }
             }
         }
-
-        // if (canSeePlayer()) {
-        // x += speedX;
-        // y += speedY;
-        // x = Math.max(0, Math.min(x, panel.boardWidth - width));
-        // y = Math.max(0, Math.min(y, panel.boardHeight - height));
-
-        // worldX = x;
-        // worldY = y;
-        // } else {
-        // action = "stand";
-        // }
-        // }
 
         if ((currentTime - lastAttackTime) / 1_000_000_000 >= 5) {
             action = "attackObject";
@@ -491,8 +460,6 @@ public class Boss extends Enity {
                     spriteNum_8Frame = 1;
                 }
                 spriteCounter_8Frame = 0;
-                x += speedX;
-                y += speedY;
             }
         }
 
@@ -548,8 +515,6 @@ public class Boss extends Enity {
                     spriteNum_14Frame = 1;
                 }
                 spriteCounter_14Frame = 0;
-                x += speedX;
-                y += speedY;
             }
         }
 

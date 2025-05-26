@@ -22,7 +22,7 @@ public class Panel extends JPanel implements Runnable {
     final int scale = 3;
     public final int tileSize = originalTileSize * scale;
     public final int maxScreenCol = 20;
-    public final int maxScreenRow = 12;
+    public final int maxScreenRow = 14;
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
 
@@ -189,7 +189,7 @@ public class Panel extends JPanel implements Runnable {
             }
 
 
-            if (System.currentTimeMillis() - startTime >= 2000) { //Boss: 200
+            if (System.currentTimeMillis() - startTime >= 200) { //Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();
