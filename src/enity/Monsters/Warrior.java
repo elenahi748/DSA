@@ -4,7 +4,6 @@ import enity.Enity;
 import enity.Player;
 import main.KeyHander;
 import main.Panel;
-import main.Viewpoint;
 import enity.Bullet;
 import Tile.TileManager;
 
@@ -70,19 +69,21 @@ public class Warrior extends Enity {
         height = panel.tileSize * 2;
 
         Random rand = new Random();
+        int mapWidth = panel.tileM.mapCol * panel.tileSize;
+        int mapHeight = panel.tileM.mapRow * panel.tileSize;
         int randomPosition = rand.nextInt(4) + 1;
         if (randomPosition == 1) {
             y = 0 - height;
-            x = rand.nextInt(panel.boardWidth + 1);
+            x = rand.nextInt(Math.max(1, mapWidth));
         } else if (randomPosition == 2) {
-            y = panel.boardHeight - height - 1; // ensure it's inside the playable field
-            x = rand.nextInt(panel.boardWidth - width);
+            y = mapHeight - height - 1;
+            x = rand.nextInt(Math.max(1, mapWidth - width));
         } else if (randomPosition == 3) {
-            x = panel.boardWidth;
-            y = rand.nextInt(panel.boardHeight + 1);
-        } else if (randomPosition == 4) {
+            x = mapWidth;
+            y = rand.nextInt(Math.max(1, mapHeight));
+        } else { // 4
             x = 0 - width;
-            y = rand.nextInt(panel.boardHeight + 1);
+            y = rand.nextInt(Math.max(1, mapHeight));
         }
 
         attackArea = new Rectangle(x, y, width, height);
@@ -274,6 +275,7 @@ public class Warrior extends Enity {
     }
 
     public List<PathNode> bfs(int startX, int startY, int goalX, int goalY, boolean[][] walkable) {
+        if (walkable == null || walkable.length == 0 || walkable[0].length == 0) return null;
         String cacheKey = generateCacheKey(startX, startY, goalX, goalY);
         if (bfsCache.containsKey(cacheKey)) {
             return bfsCache.get(cacheKey);
@@ -325,7 +327,7 @@ public class Warrior extends Enity {
     public void clearBfsCache() {
         bfsCache.clear();
     }
-    /// ////////////// debug only
+/// ////////////// debug only
 //    public void printWalkableMap() {
 //        boolean[][] walkableMap = tileM.getWalkableMap();
 //        int cols = walkableMap.length;
@@ -414,36 +416,34 @@ public class Warrior extends Enity {
                         worldY = y;
                     } else {
                         // Get tile coordinates
-                        int startTileX = x / panel.tileSize;
-                        int startTileY = y / panel.tileSize;
-                        int goalTileX = player.x / panel.tileSize;
-                        int goalTileY = player.y / panel.tileSize;
+                        int tileSize = panel.tileSize;
+                        int startTileX = Math.max(0, Math.min(x / tileSize, panel.tileM.mapCol - 1));
+                        int startTileY = Math.max(0, Math.min(y / tileSize, panel.tileM.mapRow - 1));
+                        int goalTileX = Math.max(0, Math.min(player.x / tileSize, panel.tileM.mapCol - 1));
+                        int goalTileY = Math.max(0, Math.min(player.y / tileSize, panel.tileM.mapRow - 1));
 
-                        // Kiểm tra tọa độ tile trước khi tiếp tục BFS
-                        if (startTileX < 0 || startTileY < 0 ||
-                                startTileX >= panel.maxScreenCol || startTileY >= panel.maxScreenRow ||
-                                goalTileX < 0 || goalTileY < 0 ||
-                                goalTileX >= panel.maxScreenCol || goalTileY >= panel.maxScreenRow) {
-                            return true; // Bỏ qua nếu nằm ngoài bản đồ
+                        if (panel.tileM.mapCol == 0 || panel.tileM.mapRow == 0) return true;
+                        if (startTileX < 0 || startTileY < 0 || startTileX >= panel.tileM.mapCol || startTileY >= panel.tileM.mapRow ||
+                            goalTileX < 0 || goalTileY < 0 || goalTileX >= panel.tileM.mapCol || goalTileY >= panel.tileM.mapRow) {
+                            return true; // bỏ qua nếu ngoài map
                         }
 
                         // Prepare the walkable map
-                        boolean[][] walkable = tileM != null ? tileM.getWalkableMap() : new boolean[panel.maxMapCol][panel.maxMapRow];
+                        boolean[][] walkable = tileM != null ? tileM.getWalkableMap() : null;
+                        if (walkable == null) return true;
 
                         List<PathNode> path = bfs(startTileX, startTileY, goalTileX, goalTileY, walkable);
                         path_bsf = path;
                         if (path != null && path.size() > 1) {
-                            PathNode nextStep = path.get(1); // step after current
-
-                            double targetX = nextStep.x * panel.tileSize + panel.tileSize / 4.0;
-                            double targetY = nextStep.y * panel.tileSize + panel.tileSize /1.5;
+                            PathNode nextStep = path.get(1);
+                            double targetX = nextStep.x * tileSize + tileSize / 4.0;
+                            double targetY = nextStep.y * tileSize + tileSize / 1.5;
 
                             double deltaX = targetX - x;
                             double deltaY = targetY - y;
                             double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                             if (distance == 0) distance = 1;
 
-                            /// /////////////////////////// update
                             x += (speed / distance) * deltaX;
                             y += (speed / distance) * deltaY;
 
@@ -546,7 +546,7 @@ public class Warrior extends Enity {
         return false;
     }
 
-    public void draw(Graphics2D g2, Viewpoint viewpoint) {
+    public void draw(Graphics2D g2, int viewpointX, int viewpointY) {
         BufferedImage image = null;
 
         if (action == "moveRight") {
@@ -749,21 +749,26 @@ public class Warrior extends Enity {
             }
         }
 
-        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
+        int drawX = x - viewpointX;
+        int drawY = y - viewpointY;
+
+        if (image != null) g2.drawImage(image, drawX, drawY, width, height, null);
+
         // Draw collision area
         g2.setColor(new Color(255, 0, 0, 100));
-        g2.fillRect(x - viewpoint.x + collisionArea.x, y - viewpoint.y + collisionArea.y, collisionArea.width, collisionArea.height);
+        g2.drawRect(worldX + collisionArea.x - viewpointX,
+                    drawY + collisionArea.y,
+                    collisionArea.width,
+                    collisionArea.height);
 
         ///  ////////////////////////////////////
         if (path_bsf != null) {
             for (PathNode node : path_bsf) {
                 int tileX = node.x;
                 int tileY = node.y;
-
-                int screenX = tileX * panel.tileSize;
-                int screenY = tileY * panel.tileSize;
-
-                g2.setColor(new Color(0, 255, 157, 128)); // Màu đỏ, trong suốt
+                int screenX = tileX * panel.tileSize - viewpointX;
+                int screenY = tileY * panel.tileSize - viewpointY;
+                g2.setColor(new Color(0, 255, 157, 128));
                 g2.fillRect(screenX, screenY, panel.tileSize, panel.tileSize);
             }
         }

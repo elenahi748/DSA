@@ -137,6 +137,9 @@ public class Player extends Enity {
         panel.cChecker.checkTile(this);
         //if collision is false, player can move
 
+        int mapWidth = panel.tileM.mapCol * panel.tileSize;
+        int mapHeight = panel.tileM.mapRow * panel.tileSize;
+
         if (keyHander.w_Pressed == true && action != "death" && !panel.cChecker.isCollisionUp()) {
             count = 1;
             if (y - speedY >= 0) {
@@ -165,7 +168,7 @@ public class Player extends Enity {
 
         if (keyHander.s_Pressed == true && action != "death" && !panel.cChecker.isCollisionDown()) {
             count = 2;
-            if (y + speedY + height <= panel.mapHeight) {
+            if (y + speedY + height <= mapHeight) {
                 y += speedY;
                 worldY = y;
             }
@@ -207,7 +210,7 @@ public class Player extends Enity {
 
         if (keyHander.d_Pressed == true && action != "death" && !panel.cChecker.isCollisionRight()) {
             count = 4;
-            if (x + speedX + width <= panel.mapWidth) { // Kiểm tra giới hạn bên phải
+            if (x + speedX + width <= mapWidth) { // Kiểm tra giới hạn bên phải
                 x += speedX;
                 worldX = x;
             }
@@ -280,7 +283,7 @@ public class Player extends Enity {
         }
     }
 
-    public void draw(Graphics2D g2, Viewpoint viewpoint) {
+    public void draw(Graphics2D g2, int viewpointX, int viewpointY) {
 //        g2.setColor(Color.WHITE);
 //        g2.fillRect(x, y, panel.tileSize, panel.tileSize);
         BufferedImage image = null;
@@ -454,7 +457,9 @@ public class Player extends Enity {
             }
         }
 
-        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
+        int drawX = x - viewpointX;
+        int drawY = y - viewpointY;
+        if (image != null) g2.drawImage(image, drawX, drawY, width, height, null);
         //draw CollisionArea rectangle
         //g2.setColor(Color.RED);
         // g2.drawRect(panel.cChecker.getPlayerLeftWorldX(),

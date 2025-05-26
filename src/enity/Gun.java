@@ -135,8 +135,11 @@ public class Gun extends Enity{
         }
     }
 
-    public void draw(Graphics2D g2, Viewpoint viewpoint) {
+    public void draw(Graphics2D g2, int viewpointX, int viewpointY) {
         BufferedImage image = null;
+        int drawX = x - viewpointX;
+        int drawY = y - viewpointY;
+
         //Gun when fire bullet right
         if (action == "right") {
             if (keyHander.right_Pressed == true) {
@@ -314,7 +317,7 @@ public class Gun extends Enity{
             }
         }
         if (player.heart > 0) {
-            g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
+            g2.drawImage(image, drawX, drawY, width, height, null);
         }
     }
     public void reset() {

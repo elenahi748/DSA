@@ -80,8 +80,8 @@ public class MapPanel extends JPanel {
         for (Component comp : mainPanel.getComponents()) {
             if (comp instanceof Panel) {
                 Panel gamePanel = (Panel) comp;
-                gamePanel.setMapType(mapType); // Chọn map
-                gamePanel.startGameThread();  // Bắt đầu game
+                gamePanel.setMapType(mapType);
+                gamePanel.startGameThread();
             }
         }
         cardLayout.show(mainPanel, "Game");

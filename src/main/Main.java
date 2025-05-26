@@ -80,9 +80,11 @@ public class Main extends JFrame {
         cardLayout.show(mainPanel, "Map");
     }
     public void startGameWithMap(JPanel mainPanel, CardLayout cardLayout, String mapType) {
-        // Gọi hàm setMapType trên gamePanel nếu cần
+        gamePanel.setMapType(mapType);
+        gamePanel.resetGame();
         cardLayout.show(mainPanel, "Game");
-        // Cần gọi startGameThread() ở Panel tại đây nếu muốn
+        gamePanel.requestFocusInWindow();
+        gamePanel.startGameThread();
     }
     public void startGame() {
         gamePanel.resetGame();

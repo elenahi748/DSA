@@ -168,8 +168,11 @@ public class Bullet extends Enity{
     public int getDamage() {
         return damage;
     }
-    public void draw (Graphics2D g2, Viewpoint viewpoint){
+    public void draw (Graphics2D g2, int viewpointX, int viewpointY){
         BufferedImage image = null;
+        int drawX = x - viewpointX;
+        int drawY = y - viewpointY;
+
         if (loopRight == true) {
             image = bulletRight;
         } else if (loopLeft == true) {
@@ -179,7 +182,7 @@ public class Bullet extends Enity{
         } else if (loopDown == true) {
             image = bulletDown;
         }
-        g2.drawImage(image, x - viewpoint.x, y - viewpoint.y, width, height, null);
+        if (image != null) g2.drawImage(image, drawX, drawY, width, height, null);
     }
     private boolean isProcessed = false;
 

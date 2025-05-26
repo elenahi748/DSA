@@ -26,13 +26,12 @@ public class Panel extends JPanel implements Runnable {
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
 
-    public final int maxMapCol = 30;
-    public final int maxMapRow = 18;
-    public final int mapWidth = maxMapCol * tileSize;
-    public final int mapHeight = maxMapRow * tileSize;
-
     //Tiles
     public TileManager tileM = new TileManager(this);
+    
+    // viewpoint (Camera)
+    public int viewpointX = 0;
+    public int viewpointY = 0;
 
     // FPS
     final int FPS = 60;
@@ -65,15 +64,12 @@ public class Panel extends JPanel implements Runnable {
 
     private Sound sound = new Sound();
 
-    private boolean showBossMessage = false; // Trạng thái hiển thị thông báo
+    private boolean showBossMessage = false;
     private long bossMessageStartTime = 0;
-
-    // viewpoint (Camera)
-    private Viewpoint viewpoint;
     
     public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         this.mainFrame = mainFrame;
-        viewpoint = new Viewpoint(boardWidth, boardHeight, mapWidth, mapHeight);
+
         tileM = new TileManager(this);
         this.setPreferredSize(new Dimension(boardWidth, boardHeight));
         this.setBackground(Color.darkGray);
@@ -103,6 +99,7 @@ public class Panel extends JPanel implements Runnable {
     public void setMapType(String mapType) {
         if (tileM != null) {
             tileM.setMap(mapType);
+        } else {
             System.err.println("tileM is null in setMapType!");
         }
     }
@@ -223,6 +220,28 @@ public class Panel extends JPanel implements Runnable {
                 sound.playSound("victorymale.wav"); // Play victory sound
             }
         }
+        updateViewpoint();
+    }
+
+    private int getMapWidth() {
+        return tileM.mapCol * tileSize;
+    }
+    private int getMapHeight() {
+        return tileM.mapRow * tileSize;
+    }
+
+    private void updateViewpoint() {
+        int mapWidth = getMapWidth();
+        int mapHeight = getMapHeight();
+
+        viewpointX = player.x + player.width / 2 - boardWidth / 2;
+        viewpointY = player.y + player.height / 2 - boardHeight / 2;
+
+        if (mapWidth <= boardWidth) viewpointX = 0;
+        else viewpointX = Math.max(0, Math.min(viewpointX, mapWidth - boardWidth));
+
+        if (mapHeight <= boardHeight) viewpointY = 0;
+        else viewpointY = Math.max(0, Math.min(viewpointY, mapHeight - boardHeight));
     }
 
     private void clearWarriors() {
@@ -270,44 +289,47 @@ public class Panel extends JPanel implements Runnable {
         // Fill nền panel trước (tránh vùng trống)
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, getWidth(), getHeight());
-        viewpoint.follow(player.x, player.y);
 
-        int drawWidth = Math.min(boardWidth, mapWidth - viewpoint.x);
-        int drawHeight = Math.min(boardHeight, mapHeight - viewpoint.y);
-        
+        int mapWidth = getMapWidth();
+        int mapHeight = getMapHeight();
+        int drawWidth = Math.min(boardWidth, mapWidth - viewpointX);
+        if (mapWidth <= boardWidth) drawWidth = mapWidth;
+        int drawHeight = Math.min(boardHeight, mapHeight - viewpointY);
+        if (mapHeight <= boardHeight) drawHeight = mapHeight;
+
         // Draw the background image
         if (backgroundImage != null) {
-                g2.drawImage(
+            g2.drawImage(
                 backgroundImage,
-                0, 0, drawWidth, drawHeight,  // Vị trí và kích thước vẽ trên panel
-                viewpoint.x, viewpoint.y,
-                viewpoint.x + drawWidth, viewpoint.y + drawHeight, // Phần ảnh lấy từ background
+                0, 0, drawWidth, drawHeight,
+                viewpointX, viewpointY,
+                viewpointX + drawWidth, viewpointY + drawHeight,
                 null
             );
         }
 
-        tileM.draw(g2, viewpoint);
-        tileM.drawCollisionAreas(g2, viewpoint);
+        tileM.draw(g2, viewpointX, viewpointY, boardWidth, boardHeight);
+        tileM.drawCollisionAreas(g2, viewpointX, viewpointY);
 
         // Draw other game elements
-        player.draw(g2, viewpoint);
-        heart.draw(g2, viewpoint);
-        gun.draw(g2, viewpoint);
+        player.draw(g2, viewpointX, viewpointY);
+        heart.draw(g2, viewpointX, viewpointY);
+        gun.draw(g2, viewpointX, viewpointY);
 
         if (bullets != null) {
             for (int i = 0; i < bullets.size(); i++) {
-                bullets.get(i).draw(g2, viewpoint);
+                bullets.get(i).draw(g2, viewpointX, viewpointY);
             }
         }
 
         if (warriors != null) {
             for (int i = 0; i < warriors.size(); i++) {
-                warriors.get(i).draw(g2, viewpoint);
+                warriors.get(i).draw(g2, viewpointX, viewpointY);
             }
         }
 
         if (activeBoss != null) {
-            activeBoss.draw(g2, viewpoint);
+            activeBoss.draw(g2, viewpointX, viewpointY);
         }
 
         if (showBossMessage) {
@@ -315,10 +337,6 @@ public class Panel extends JPanel implements Runnable {
             g2.setFont(new Font("Arial", Font.BOLD, 30));
             g2.drawString("Boss is coming!", boardWidth / 2 - 100, boardHeight / 2);
         }
-
-        // if (gameOver) {
-            
-        // }
 
         if (gameWon) {
             g2.setColor(Color.YELLOW);

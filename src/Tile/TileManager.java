@@ -1,7 +1,6 @@
 package Tile;
 
 import main.Panel;
-import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,6 +15,8 @@ public class TileManager {
     private Panel panel;
     public  Tile[] tile;
     public int mapTileNum[][];
+    public int mapCol, mapRow;
+    
     private boolean[][] walkableMapCache;
     private boolean walkableMapDirty = true;
 
@@ -24,7 +25,6 @@ public class TileManager {
     public TileManager(Panel panel){
         tile = new Tile[10];
         this.panel = panel;
-        mapTileNum = new int[panel.maxMapCol][panel.maxMapRow];
 
         // width = panel.tileSize * 4 / 3;
         // height = panel.tileSize * 4 / 3;
@@ -34,7 +34,6 @@ public class TileManager {
 
     public void setMap(String mapType) {
         String mapPath = "/Mapdata/Map01.txt"; // Mặc định là Tiny (Map01)
-
         if ("Tiny".equals(mapType)) {
             mapPath = "/Mapdata/Map01.txt";
         } else if ("Medium".equals(mapType)) {
@@ -42,7 +41,6 @@ public class TileManager {
         } else if ("Big".equals(mapType)) {
             mapPath = "/Mapdata/Map03.txt";
         }
-
         loadMap(mapPath);
     }
 
@@ -61,80 +59,73 @@ public class TileManager {
     }
 
     public void loadMap(String filePath) {
-        System.out.println("Loading map from: " + filePath); // Log để debug
         try (InputStream is = getClass().getResourceAsStream(filePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-
-            for (int row = 0; row < panel.maxMapRow; row++) {
-                String line = br.readLine();
-                if (line == null) break; // Nếu không có thêm dòng nào, dừng đọc
-                String[] numbers = line.trim().split(" ");
-
-                for (int col = 0; col < panel.maxMapCol; col++) {
-                    int num = 0; // Mặc định là tile "wall"
-                    if (col < numbers.length) {
-                        try {
-                            num = Integer.parseInt(numbers[col]);
-                        } catch (NumberFormatException e) {
-                            System.err.println("Invalid tile number at row " + row + ", col " + col);
-                        }
+            java.util.List<int[]> rows = new java.util.ArrayList<>();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] numbers = line.trim().split(" +");
+                int[] row = new int[numbers.length];
+                for (int i = 0; i < numbers.length; i++) {
+                    try {
+                        row[i] = Integer.parseInt(numbers[i]);
+                    } catch (NumberFormatException e) {
+                        row[i] = 0;
                     }
-                    // Đảm bảo chỉ số tile hợp lệ
-                    mapTileNum[col][row] = Math.max(0, Math.min(num, tile.length - 1));
+                }
+                rows.add(row);
+            }
+            mapRow = rows.size();
+            mapCol = rows.isEmpty() ? 0 : rows.get(0).length;
+            mapTileNum = new int[mapCol][mapRow];
+            for (int r = 0; r < mapRow; r++) {
+                for (int c = 0; c < mapCol; c++) {
+                    mapTileNum[c][r] = rows.get(r)[c];
                 }
             }
             markWalkableMapDirty();
         } catch (IOException e) {
-            System.err.println("Failed to load map from: " + filePath);
             e.printStackTrace();
         }
     }
 
-    public void draw(Graphics2D g2, Viewpoint viewpoint) {
+    public void draw(Graphics2D g2, int viewpointX, int viewpointY, int boardWidth, int boardHeight) {
         int tileSize = panel.tileSize;
-
-        int startCol = viewpoint.x / tileSize;
-        int endCol = Math.min((viewpoint.x + panel.boardWidth) / tileSize, panel.maxMapCol - 1);
-        int startRow = viewpoint.y / tileSize;
-        int endRow = Math.min((viewpoint.y + panel.boardHeight) / tileSize, panel.maxMapRow - 1);
+        int startCol = Math.max(0, viewpointX / tileSize);
+        int endCol = Math.min((viewpointX + boardWidth) / tileSize, mapCol - 1);
+        int startRow = Math.max(0, viewpointY / tileSize);
+        int endRow = Math.min((viewpointY + boardHeight) / tileSize, mapRow - 1);
 
         for (int row = startRow; row <= endRow; row++) {
             for (int col = startCol; col <= endCol; col++) {
                 int tileNum = mapTileNum[col][row];
-
-                if (tileNum < 0 || tileNum >= tile.length || tile[tileNum] == null) {
-                    continue;
-                }
-
-                int screenX = col * tileSize - viewpoint.x;
-                int screenY = row * tileSize - viewpoint.y;
+                if (tileNum < 0 || tileNum >= tile.length || tile[tileNum] == null) continue;
+                int screenX = col * tileSize - viewpointX;
+                int screenY = row * tileSize - viewpointY;
                 g2.drawImage(tile[tileNum].image, screenX, screenY, tileSize, tileSize, null);
             }
         }
     }
 
     public boolean[][] getWalkableMap() {
-        int cols = panel.maxScreenCol;
-        int rows = panel.maxScreenRow;
-
-        boolean[][] walkableMap = new boolean[cols][rows];
-
-        if (walkableMapDirty) {
-            // Làm mới cache nếu cần
-            walkableMapCache = new boolean[panel.maxMapCol][panel.maxMapRow];
-            for (int row = 0; row < panel.maxMapRow; row++) {
-                for (int col = 0; col < panel.maxMapCol; col++) {
-                    walkableMapCache[col][row] = !tile[mapTileNum[col][row]].collision;
+        if (walkableMapCache == null || walkableMapDirty) {
+            walkableMapCache = new boolean[mapCol][mapRow];
+            for (int row = 0; row < mapRow; row++) {
+                for (int col = 0; col < mapCol; col++) {
+                    int tileNum = mapTileNum[col][row];
+                    walkableMapCache[col][row] = (tileNum >= 0 && tileNum < tile.length && !tile[tileNum].collision);
                 }
             }
-            walkableMapDirty = false; // Cache đã được làm mới
+            walkableMapDirty = false;
         }
-        return walkableMap;
+        return walkableMapCache;
     }
+
     public void markWalkableMapDirty() {
         walkableMapDirty = true;
     }
-    public void drawCollisionAreas(Graphics2D g2, Viewpoint viewpoint) {
+
+    public void drawCollisionAreas(Graphics2D g2, int viewpointX, int viewpointY) {
         g2.setColor(new Color(255, 0, 0, 100));
         // for (int row = 0; row < panel.maxScreenRow; row++) {
         //     for (int col = 0; col < panel.maxScreenCol; col++) {

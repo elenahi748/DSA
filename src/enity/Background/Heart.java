@@ -105,7 +105,7 @@ public class Heart extends Enity {
         }
     }
 
-    public void draw (Graphics2D g2, Viewpoint viewpoint){
+    public void draw (Graphics2D g2, int viewpointX, int viewpointY){
         BufferedImage image = null;
         if (action.equals("4_Hearts")) image = Heart1;
         else if (action.equals("3_Hearts")) image = Heart2;
