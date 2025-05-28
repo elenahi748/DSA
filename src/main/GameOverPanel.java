@@ -19,7 +19,6 @@ public class GameOverPanel extends JPanel {
         title.setForeground(Color.RED);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Panel chứa 2 nút theo chiều dọc
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setOpaque(false);
@@ -34,7 +33,6 @@ public class GameOverPanel extends JPanel {
         JButton backButton = new JButton("Back to Menu");
         styleButton(backButton);
         backButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        // Sử dụng mainFrame để gọi về menu!
         backButton.addActionListener(e -> mainFrame.backToMenu());
         buttonPanel.add(backButton);
 

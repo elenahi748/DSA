@@ -159,20 +159,19 @@ public class Panel extends JPanel implements Runnable {
 
             for (int i = 0; i < bullets.size(); i++) {
                 Bullet bullet = bullets.get(i);
-                for (int j = 0; j < warriors.size(); j++) {
-                    Warrior warrior = warriors.get(j);
+                // Kiểm tra va chạm với warriors
+                for (Warrior warrior : warriors) {
                     warrior.checkCollisionWithBullet(bullet);
                 }
-
+                // Kiểm tra va chạm với boss
+                if (activeBoss != null) {
+                    activeBoss.checkCollisionWithBullet(bullet);
+                }
+                // Cập nhật và xóa đạn nếu cần
                 if (bullet.isProcessed() || bullet.update2()) {
+                    System.out.println("Bullet removed at index " + i + ", x=" + bullet.x + ", y=" + bullet.y); // Debug
                     bullets.remove(i);
                     i--;
-                }
-            }
-
-            for (int i = 0; i < bullets.size(); i++) {
-                if (bullets.get(i).update2()) {
-                    bullets.remove(i);
                 }
             }
 
@@ -223,14 +222,14 @@ public class Panel extends JPanel implements Runnable {
         updateViewpoint();
     }
 
-    private int getMapWidth() {
+    public int getMapWidth() {
         return tileM.mapCol * tileSize;
     }
-    private int getMapHeight() {
+    public int getMapHeight() {
         return tileM.mapRow * tileSize;
     }
 
-    private void updateViewpoint() {
+    public void updateViewpoint() {
         int mapWidth = getMapWidth();
         int mapHeight = getMapHeight();
 
@@ -334,16 +333,38 @@ public class Panel extends JPanel implements Runnable {
 
         if (showBossMessage) {
             g2.setColor(Color.LIGHT_GRAY);
-            g2.setFont(new Font("Arial", Font.BOLD, 30));
-            g2.drawString("Boss is coming!", boardWidth / 2 - 100, boardHeight / 2);
+            Font bossFont = new Font("Arial", Font.BOLD, 30);
+            g2.setFont(bossFont);
+            String bossMessage = "Boss is coming!";
+            FontMetrics fm = g2.getFontMetrics();
+            int textWidth = fm.stringWidth(bossMessage);
+            int textHeight = fm.getHeight();
+            int x = (getWidth() - textWidth) / 2;
+            int y = (getHeight() - textHeight) / 2;
+            g2.drawString(bossMessage, x, y);
         }
 
         if (gameWon) {
             g2.setColor(Color.YELLOW);
-            g2.setFont(new Font("Arial", Font.BOLD, 60));
-            g2.drawString("VICTORY", boardWidth / 2 - 180, boardHeight / 2);
-            g2.setFont(new Font("Arial", Font.ITALIC, 30));
-            g2.drawString("Enter to restart", boardWidth / 2 - 145, boardHeight / 2+70);
+            Font victoryFont = new Font("Arial", Font.BOLD, 60);
+            g2.setFont(victoryFont);
+            String victoryMessage = "VICTORY";
+            FontMetrics fmVictory = g2.getFontMetrics();
+            int victoryWidth = fmVictory.stringWidth(victoryMessage);
+            int victoryHeight = fmVictory.getHeight();
+            int victoryX = (getWidth() - victoryWidth) / 2;
+            int victoryY = (getHeight() - victoryHeight) / 2;
+            g2.drawString(victoryMessage, victoryX, victoryY);
+
+            Font restartFont = new Font("Arial", Font.ITALIC, 30);
+            g2.setFont(restartFont);
+            String restartMessage = "Enter to restart";
+            FontMetrics fmRestart = g2.getFontMetrics();
+            int restartWidth = fmRestart.stringWidth(restartMessage);
+            int restartHeight = fmRestart.getHeight();
+            int restartX = (getWidth() - restartWidth) / 2;
+            int restartY = victoryY + victoryHeight + restartHeight;
+            g2.drawString(restartMessage, restartX, restartY);
         }
         g2.dispose();
     }

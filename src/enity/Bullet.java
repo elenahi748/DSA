@@ -89,7 +89,7 @@ public class Bullet extends Enity{
         }
         if (loopRight == true) {
             x += bulletSpeed;
-            if (x > panel.boardWidth) {
+            if (x > panel.getMapWidth()) {
                 return true;
             }
         }
@@ -126,7 +126,7 @@ public class Bullet extends Enity{
             }
             if (loopDown == true) {
                 y += bulletSpeed;
-                if (y > panel.boardHeight) {
+                if (y > panel.getMapHeight()) {
                     return true;
                 }
             }
@@ -152,7 +152,7 @@ public class Bullet extends Enity{
             }
             if (loopDown == true) {
                 y += bulletSpeed;
-                if (y > panel.boardHeight) {
+                if (y > panel.getMapHeight()) {
                     return true;
                 }
             }
@@ -182,7 +182,11 @@ public class Bullet extends Enity{
         } else if (loopDown == true) {
             image = bulletDown;
         }
-        if (image != null) g2.drawImage(image, drawX, drawY, width, height, null);
+        if (drawX >= -width && drawX <= panel.boardWidth + width && drawY >= -height && drawY <= panel.boardHeight + height) {
+            if (image != null) {
+                g2.drawImage(image, drawX, drawY, width, height, null);
+            }
+        }
     }
     private boolean isProcessed = false;
 
