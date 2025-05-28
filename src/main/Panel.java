@@ -26,9 +26,9 @@ public class Panel extends JPanel implements Runnable {
     public final int boardWidth = maxScreenCol * tileSize;
     public final int boardHeight = maxScreenRow * tileSize;
 
-    //Tiles
+    // Tiles
     public TileManager tileM = new TileManager(this);
-    
+
     // viewpoint (Camera)
     public int viewpointX = 0;
     public int viewpointY = 0;
@@ -40,7 +40,7 @@ public class Panel extends JPanel implements Runnable {
     KeyHander keyHander = new KeyHander();
     Thread gameThread;
 
-    //Check collision
+    // Check collision
     public CollisionChecker cChecker = new CollisionChecker(this);
 
     // Entity and object
@@ -66,7 +66,7 @@ public class Panel extends JPanel implements Runnable {
 
     private boolean showBossMessage = false;
     private long bossMessageStartTime = 0;
-    
+
     public Panel(JPanel mainPanel, CardLayout cardLayout, Main mainFrame) {
         this.mainFrame = mainFrame;
 
@@ -76,11 +76,12 @@ public class Panel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyHander);
         this.setFocusable(true);
-        //sound.playLoopedSound("game-music.wav");
+        // sound.playLoopedSound("game-music.wav");
 
         // Load the background image
         try {
-            backgroundImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/background/main_bg.png")));
+            backgroundImage = ImageIO
+                    .read(Objects.requireNonNull(getClass().getResourceAsStream("/background/main_bg.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,12 +91,14 @@ public class Panel extends JPanel implements Runnable {
         super.addNotify();
         this.requestFocusInWindow();
     }
+
     public void startGameThread() {
         if (gameThread == null || !gameThread.isAlive()) {
             gameThread = new Thread(this);
             gameThread.start();
         }
     }
+
     public void setMapType(String mapType) {
         if (tileM != null) {
             tileM.setMap(mapType);
@@ -187,8 +190,7 @@ public class Panel extends JPanel implements Runnable {
                 startTime = System.currentTimeMillis();
             }
 
-
-            if (System.currentTimeMillis() - startTime >= 200) { //Boss: 200
+            if (System.currentTimeMillis() - startTime >= 200) { // Boss: 200
                 if (!stopWarriorCreation) {
                     showBossMessage = true; // Kích hoạt thông báo
                     bossMessageStartTime = System.currentTimeMillis();
@@ -204,7 +206,8 @@ public class Panel extends JPanel implements Runnable {
             warriors.clear();
             activeBoss = null;
             gameOver = true; // Đánh dấu game over
-            if (mainFrame != null) mainFrame.showGameOver();
+            if (mainFrame != null)
+                mainFrame.showGameOver();
         }
         if (activeBoss != null) {
             for (Bullet bullet : bullets) {
@@ -225,6 +228,7 @@ public class Panel extends JPanel implements Runnable {
     public int getMapWidth() {
         return tileM.mapCol * tileSize;
     }
+
     public int getMapHeight() {
         return tileM.mapRow * tileSize;
     }
@@ -236,11 +240,15 @@ public class Panel extends JPanel implements Runnable {
         viewpointX = player.x + player.width / 2 - boardWidth / 2;
         viewpointY = player.y + player.height / 2 - boardHeight / 2;
 
-        if (mapWidth <= boardWidth) viewpointX = 0;
-        else viewpointX = Math.max(0, Math.min(viewpointX, mapWidth - boardWidth));
+        if (mapWidth <= boardWidth)
+            viewpointX = 0;
+        else
+            viewpointX = Math.max(0, Math.min(viewpointX, mapWidth - boardWidth));
 
-        if (mapHeight <= boardHeight) viewpointY = 0;
-        else viewpointY = Math.max(0, Math.min(viewpointY, mapHeight - boardHeight));
+        if (mapHeight <= boardHeight)
+            viewpointY = 0;
+        else
+            viewpointY = Math.max(0, Math.min(viewpointY, mapHeight - boardHeight));
     }
 
     private void clearWarriors() {
@@ -278,33 +286,34 @@ public class Panel extends JPanel implements Runnable {
         for (Warrior warrior : warriors) {
             warrior.clearBfsCache();
         }
-//sound.playLoopedSound("game-music.wav");
+        // sound.playLoopedSound("game-music.wav");
     }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // Fill nền panel trước (tránh vùng trống)
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         int mapWidth = getMapWidth();
         int mapHeight = getMapHeight();
         int drawWidth = Math.min(boardWidth, mapWidth - viewpointX);
-        if (mapWidth <= boardWidth) drawWidth = mapWidth;
+        if (mapWidth <= boardWidth)
+            drawWidth = mapWidth;
         int drawHeight = Math.min(boardHeight, mapHeight - viewpointY);
-        if (mapHeight <= boardHeight) drawHeight = mapHeight;
+        if (mapHeight <= boardHeight)
+            drawHeight = mapHeight;
 
         // Draw the background image
         if (backgroundImage != null) {
             g2.drawImage(
-                backgroundImage,
-                0, 0, drawWidth, drawHeight,
-                viewpointX, viewpointY,
-                viewpointX + drawWidth, viewpointY + drawHeight,
-                null
-            );
+                    backgroundImage,
+                    0, 0, drawWidth, drawHeight,
+                    viewpointX, viewpointY,
+                    viewpointX + drawWidth, viewpointY + drawHeight,
+                    null);
         }
 
         tileM.draw(g2, viewpointX, viewpointY, boardWidth, boardHeight);
@@ -369,4 +378,3 @@ public class Panel extends JPanel implements Runnable {
         g2.dispose();
     }
 }
-
