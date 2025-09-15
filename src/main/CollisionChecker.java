@@ -75,11 +75,11 @@ public class CollisionChecker {
         playerTopWorldY = player.worldY + player.collisionArea.y;
         playerBottomWorldY = player.worldY + player.collisionArea.y + player.collisionArea.height;
 
-        playerLeftCol = Math.max(0, playerLeftWorldX / panel.tileSize);
-        playerRightCol = Math.min(panel.tileM.mapTileNum.length - 1, playerRightWorldX / panel.tileSize);
-        playerTopRow = Math.max(0, playerTopWorldY / panel.tileSize);
-        playerBottRow = Math.min(panel.tileM.mapTileNum[0].length - 1, playerBottomWorldY / panel.tileSize);
-        
+        playerLeftCol = playerLeftWorldX / panel.tileSize;
+        playerRightCol = playerRightWorldX / panel.tileSize;
+        playerTopRow = playerTopWorldY / panel.tileSize;
+        playerBottRow = playerBottomWorldY / panel.tileSize;
+
         int tileNum1, tileNum2;
 
         if (player.direction_vertical != null) {
@@ -107,6 +107,7 @@ public class CollisionChecker {
                     }
                     break;
             }
+
         }
         if (player.direction_horizontal != null) {
             switch (player.direction_horizontal)
@@ -136,15 +137,13 @@ public class CollisionChecker {
 
             }
         }
+
     }
 
     public boolean isCollisionUp() { return collisionTop; }
     public boolean isCollisionDown() { return collisionBottom; }
     public boolean isCollisionLeft() { return collisionLeft; }
     public boolean isCollisionRight() { return collisionRight; }
-
-
-
 
     public void checkTileWarrior(Warrior warrior, double speedX, double speedY) {
         warrior.collisionOn = false;
@@ -186,30 +185,23 @@ public class CollisionChecker {
         int bottomRow = futureBottomY / panel.tileSize;
 
         // Clamp indices
-        leftCol = Math.max(0, Math.min(leftCol, panel.maxScreenCol - 1));
-        rightCol = Math.max(0, Math.min(rightCol, panel.maxScreenCol - 1));
-        topRow = Math.max(0, Math.min(topRow, panel.maxScreenRow - 1));
-        bottomRow = Math.max(0, Math.min(bottomRow, panel.maxScreenRow - 1));
+        leftCol = Math.max(0, Math.min(leftCol, panel.tileM.mapCol - 1));
+        rightCol = Math.max(0, Math.min(rightCol, panel.tileM.mapCol - 1));
+        topRow = Math.max(0, Math.min(topRow, panel.tileM.mapRow - 1));
+        bottomRow = Math.max(0, Math.min(bottomRow, panel.tileM.mapRow - 1));
 
-        int tile1 = panel.tileM.mapTileNum[leftCol][topRow];
-        int tile2 = panel.tileM.mapTileNum[rightCol][topRow];
-        int tile3 = panel.tileM.mapTileNum[leftCol][bottomRow];
-        int tile4 = panel.tileM.mapTileNum[rightCol][bottomRow];
-
-        boolean hitWall = panel.tileM.tile[tile1].collision ||
-                panel.tileM.tile[tile2].collision ||
-                panel.tileM.tile[tile3].collision ||
-                panel.tileM.tile[tile4].collision;
-
-        boss.collisionOn = hitWall;
-
-        if (hitWall) {
-            // Bounce back by reversing direction
-            if (moveX != 0) boss.directionX *= -1;
-            if (moveY != 0) boss.directionY *= -1;
+        for (int col = leftCol; col <= rightCol; col++) {
+            for (int row = topRow; row <= bottomRow; row++) {
+                int tileNum = panel.tileM.mapTileNum[col][row];
+                if (panel.tileM.tile[tileNum].collision) {
+                    boss.collisionOn = true;
+                    // Đảo hướng nếu va chạm
+                    if (moveX != 0) boss.directionX *= -1;
+                    if (moveY != 0) boss.directionY *= -1;
+                    return; // Thoát sớm nếu tìm thấy va chạm
+                }
+            }
         }
     }
-
-
 
 }

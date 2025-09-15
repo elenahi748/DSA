@@ -3,6 +3,7 @@ package enity;
 import enity.Monsters.Warrior;
 import main.KeyHander;
 import main.Panel;
+import main.Viewpoint;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -88,7 +89,7 @@ public class Bullet extends Enity{
         }
         if (loopRight == true) {
             x += bulletSpeed;
-            if (x > panel.boardWidth) {
+            if (x > panel.getMapWidth()) {
                 return true;
             }
         }
@@ -125,7 +126,7 @@ public class Bullet extends Enity{
             }
             if (loopDown == true) {
                 y += bulletSpeed;
-                if (y > panel.boardHeight) {
+                if (y > panel.getMapHeight()) {
                     return true;
                 }
             }
@@ -151,7 +152,7 @@ public class Bullet extends Enity{
             }
             if (loopDown == true) {
                 y += bulletSpeed;
-                if (y > panel.boardHeight) {
+                if (y > panel.getMapHeight()) {
                     return true;
                 }
             }
@@ -167,8 +168,11 @@ public class Bullet extends Enity{
     public int getDamage() {
         return damage;
     }
-    public void draw (Graphics2D g2){
+    public void draw (Graphics2D g2, int viewpointX, int viewpointY){
         BufferedImage image = null;
+        int drawX = x - viewpointX;
+        int drawY = y - viewpointY;
+
         if (loopRight == true) {
             image = bulletRight;
         } else if (loopLeft == true) {
@@ -178,7 +182,11 @@ public class Bullet extends Enity{
         } else if (loopDown == true) {
             image = bulletDown;
         }
-        g2.drawImage(image, x, y, null);
+        if (drawX >= -width && drawX <= panel.boardWidth + width && drawY >= -height && drawY <= panel.boardHeight + height) {
+            if (image != null) {
+                g2.drawImage(image, drawX, drawY, width, height, null);
+            }
+        }
     }
     private boolean isProcessed = false;
 
